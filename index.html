@@ -143,10 +143,13 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   flex-direction: column;
-  display: none;
+  display: none !important;
+  opacity: 0;
+  animation: none;
 }
 .topbar-dropdown.open {
-  display: flex;
+  display: flex !important;
+  opacity: 1;
   animation: dropDown .2s ease forwards;
 }
 @keyframes dropDown {
