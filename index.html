@@ -399,9 +399,9 @@ a:hover .arr { transform: translateX(3px); }
 <div class="player" id="player">
   <div class="player-inner" id="playerInner">
     <div class="player-controls">
-      <button class="player-btn player-btn-skip" id="btnPrev" style="transform:scaleX(-1)">▶▶</button>
-      <button class="player-btn player-btn-play" id="btnPlay">▶</button>
-      <button class="player-btn player-btn-skip" id="btnNext">▶▶</button>
+      <button class="player-btn player-btn-skip" id="btnPrev" style="transform:scaleX(-1)">▶&#xFE0E;▶&#xFE0E;</button>
+      <button class="player-btn player-btn-play" id="btnPlay">▶&#xFE0E;</button>
+      <button class="player-btn player-btn-skip" id="btnNext">▶&#xFE0E;▶&#xFE0E;</button>
     </div>
     <span class="player-time-disp" id="playerTimeCurrent">0:00</span>
     <div class="player-progress" id="playerProgress">
@@ -551,7 +551,7 @@ function loadTrack(idx) {
 }
 
 function setPlaying(v) {
-  btnPlay.textContent = v ? '' : '▶';
+  btnPlay.textContent = v ? '' : '▶\uFE0E';
   btnPlay.classList.toggle('playing', v);
 }
 
