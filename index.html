@@ -528,17 +528,17 @@ a:hover .arr { transform: translateX(3px); }
 
 <header class="topbar">
   <img class="topbar-logo" src="IMAGES/logo_white.png" alt="CITYSPROBLEM">
-  <button class="topbar-menu-btn" id="menuBtn" aria-label="Menu">
+  <!-- <button class="topbar-menu-btn" id="menuBtn" aria-label="Menu">
     <span></span><span></span><span></span>
-  </button>
+  </button> -->
 </header>
-<div class="topbar-dropdown" id="menuDropdown">
+<!-- <div class="topbar-dropdown" id="menuDropdown">
   <button>Placeholder 1</button>
   <button>Placeholder 2</button>
   <button>Placeholder 3</button>
   <button>Placeholder 4</button>
   <button>Placeholder 5</button>
-</div>
+</div> -->
 
 <main>
   <div class="aurora"></div>
@@ -828,31 +828,31 @@ window.addEventListener('resize', () => {
 });
 
 /* topbar menu */
-const menuBtn      = document.getElementById('menuBtn');
-const menuDropdown = document.getElementById('menuDropdown');
-function closeMenu() {
-  if (!menuDropdown.classList.contains('open')) return;
-  menuDropdown.classList.add('closing');
-  menuBtn.classList.remove('open');
-  setTimeout(() => {
-    menuDropdown.classList.remove('open', 'closing');
-  }, 200);
-}
-menuBtn.addEventListener('click', () => {
-  if (menuDropdown.classList.contains('open')) {
-    closeMenu();
-  } else {
-    menuDropdown.classList.add('open');
-    menuBtn.classList.add('open');
-  }
-});
-document.addEventListener('click', e => {
-  if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) closeMenu();
-});
-[menuBtn, ...menuDropdown.querySelectorAll('button')].forEach(el => {
-  el.addEventListener('mouseenter', () => document.body.classList.add('link-hover'));
-  el.addEventListener('mouseleave', () => document.body.classList.remove('link-hover'));
-});
+// const menuBtn      = document.getElementById('menuBtn');
+// const menuDropdown = document.getElementById('menuDropdown');
+// function closeMenu() {
+//   if (!menuDropdown.classList.contains('open')) return;
+//   menuDropdown.classList.add('closing');
+//   menuBtn.classList.remove('open');
+//   setTimeout(() => {
+//     menuDropdown.classList.remove('open', 'closing');
+//   }, 200);
+// }
+// menuBtn.addEventListener('click', () => {
+//   if (menuDropdown.classList.contains('open')) {
+//     closeMenu();
+//   } else {
+//     menuDropdown.classList.add('open');
+//     menuBtn.classList.add('open');
+//   }
+// });
+// document.addEventListener('click', e => {
+//   if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) closeMenu();
+// });
+// [menuBtn, ...menuDropdown.querySelectorAll('button')].forEach(el => {
+//   el.addEventListener('mouseenter', () => document.body.classList.add('link-hover'));
+//   el.addEventListener('mouseleave', () => document.body.classList.remove('link-hover'));
+// });
 
 /* star field + shooting stars */
 const sc  = document.getElementById('stars');
