@@ -622,11 +622,26 @@ audio.addEventListener('timeupdate', () => {
   playerTimeCurrent.textContent = fmt(audio.currentTime);
   playerTimeTotal.textContent   = fmt(audio.duration);
 });
-playerProg.addEventListener('click', e => {
+function seekTo(clientX) {
   if (!audio.duration) return;
   const r = playerProg.getBoundingClientRect();
-  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+  const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+  audio.currentTime = pct * audio.duration;
+  playerFill.style.width = (pct * 100) + '%';
+}
+let isSeeking = false;
+playerProg.addEventListener('mousedown', e => {
+  isSeeking = true;
+  seekTo(e.clientX);
 });
+playerProg.addEventListener('touchstart', e => {
+  isSeeking = true;
+  seekTo(e.touches[0].clientX);
+}, { passive: true });
+window.addEventListener('mousemove', e => { if (isSeeking) seekTo(e.clientX); });
+window.addEventListener('touchmove', e => { if (isSeeking) seekTo(e.touches[0].clientX); }, { passive: true });
+window.addEventListener('mouseup',  () => { isSeeking = false; });
+window.addEventListener('touchend', () => { isSeeking = false; });
 
 /* volume slider */
 const volSlider = document.getElementById('volSlider');
