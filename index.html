@@ -262,6 +262,8 @@ a:hover .arr { transform: translateX(3px); }
   display: inline-flex; align-items: center; justify-content: center;
   line-height: 1; padding: 0 .6rem;
   cursor: none; transition: color .2s; user-select: none;
+  -webkit-appearance: none; appearance: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .player-btn:hover { color: var(--ice); }
 .player-btn-play { color: var(--text); font-size: 1.4rem; width: 2.2rem; height: 1.6rem; position: relative; }
@@ -347,7 +349,7 @@ a:hover .arr { transform: translateX(3px); }
     font-size: .55rem;
   }
   .player-time-disp { font-size: .5rem; }
-  .player-btn { cursor: auto; padding: 0 .45rem; }
+  .player-btn { cursor: auto; }
   .player-progress { cursor: auto; }
   .player-vol-slider { cursor: auto; }
   .player-vol-slider::-webkit-slider-thumb { cursor: auto; }
