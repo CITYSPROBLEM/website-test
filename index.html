@@ -21,24 +21,25 @@
   --purple: #7c3aed;
 }
 
+html {
+  background-color: #030a14;
+}
 html, body {
   width: 100%; min-height: 100%;
-  background: none;
-  background-color: #030a14;
   cursor: none;
   overflow: hidden;
 }
 body {
+  background-color: #030a14;
   color: var(--text);
   font-family: 'Michroma', sans-serif;
   font-weight: 400;
 }
 .bg-fixed {
-  position: fixed; inset: 0; z-index: 0;
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;
   background:
     linear-gradient(to bottom, rgba(4,6,15,.65) 0%, rgba(20,10,40,.45) 50%, rgba(4,6,15,.8) 100%),
     url('IMAGES/PFP.webp') center/cover no-repeat;
-  background-color: #04060f;
   pointer-events: none;
 }
 a, button, input { cursor: none; }
@@ -658,6 +659,16 @@ window.addEventListener('mousemove', e => { if (isSeeking) seekTo(e.clientX); })
 window.addEventListener('touchmove', e => { if (isSeeking) { e.preventDefault(); seekTo(e.touches[0].clientX); } }, { passive: false });
 window.addEventListener('mouseup',  () => { if (isSeeking) { isSeeking = false; if (wasPlaying) audio.play(); } });
 window.addEventListener('touchend', () => { if (isSeeking) { isSeeking = false; if (wasPlaying) audio.play(); } });
+
+/* block horizontal swipe on mobile */
+let _txStart = 0, _tyStart = 0;
+document.addEventListener('touchstart', e => { _txStart = e.touches[0].clientX; _tyStart = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (isSeeking) return; // already handled by seek listener
+  const dx = Math.abs(e.touches[0].clientX - _txStart);
+  const dy = Math.abs(e.touches[0].clientY - _tyStart);
+  if (dx > dy) e.preventDefault();
+}, { passive: false });
 
 /* volume slider */
 const volSlider = document.getElementById('volSlider');
