@@ -142,14 +142,16 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   border-bottom: 1px solid rgba(0,212,255,.12);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  display: flex; flex-direction: column;
-  visibility: hidden; opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity .2s ease, transform .2s ease, visibility .2s;
+  flex-direction: column;
+  display: none;
 }
 .topbar-dropdown.open {
-  visibility: visible; opacity: 1;
-  transform: translateY(0);
+  display: flex;
+  animation: dropDown .2s ease forwards;
+}
+@keyframes dropDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .topbar-dropdown button {
   background: none; border: none; border-bottom: 1px solid rgba(0,212,255,.08);
