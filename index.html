@@ -154,14 +154,53 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   to   { opacity: 1; transform: translateY(0); }
 }
 .topbar-dropdown button {
-  background: none; border: none; border-bottom: 1px solid rgba(0,212,255,.08);
-  color: var(--text); font-family: 'Michroma', sans-serif;
-  font-size: .7rem; letter-spacing: .15em; text-transform: uppercase;
-  padding: .9rem 1.25rem; text-align: left;
-  transition: color .2s, background .2s;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%;
+  font-family: 'Michroma', sans-serif;
+  font-size: clamp(.8rem, 1.6vw, 1rem);
+  font-weight: 400;
+  letter-spacing: .18em; text-transform: uppercase; white-space: nowrap;
+  color: var(--text);
+  padding: .75rem 1.1rem;
+  border: none;
+  position: relative; overflow: hidden; contain: layout;
+  background-color: transparent;
+  background-image:
+    linear-gradient(rgba(0,212,255,.55), rgba(0,212,255,.55)),
+    linear-gradient(rgba(0,212,255,.55), rgba(0,212,255,.55)),
+    linear-gradient(rgba(0,212,255,.55), rgba(0,212,255,.55)),
+    linear-gradient(rgba(0,212,255,.55), rgba(0,212,255,.55)),
+    linear-gradient(rgba(0,212,255,.55), rgba(0,212,255,.55)),
+    linear-gradient(rgba(0,212,255,.55), rgba(0,212,255,.55)),
+    linear-gradient(rgba(0,212,255,.55), rgba(0,212,255,.55)),
+    linear-gradient(rgba(0,212,255,.55), rgba(0,212,255,.55));
+  background-size: 11px 2px, 2px 11px, 11px 2px, 2px 11px, 11px 2px, 2px 11px, 11px 2px, 2px 11px;
+  background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  transition: color .25s;
 }
-.topbar-dropdown button:last-child { border-bottom: none; }
-.topbar-dropdown button:hover { color: var(--ice); background: rgba(0,212,255,.06); }
+.topbar-dropdown button:hover {
+  color: var(--ice);
+  background-image:
+    linear-gradient(rgba(0,212,255,1), rgba(0,212,255,1)),
+    linear-gradient(rgba(0,212,255,1), rgba(0,212,255,1)),
+    linear-gradient(rgba(0,212,255,1), rgba(0,212,255,1)),
+    linear-gradient(rgba(0,212,255,1), rgba(0,212,255,1)),
+    linear-gradient(rgba(0,212,255,1), rgba(0,212,255,1)),
+    linear-gradient(rgba(0,212,255,1), rgba(0,212,255,1)),
+    linear-gradient(rgba(0,212,255,1), rgba(0,212,255,1)),
+    linear-gradient(rgba(0,212,255,1), rgba(0,212,255,1));
+}
+.topbar-dropdown button::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,212,255,.12), transparent);
+  transform: skewX(-15deg) translateX(-150%);
+  pointer-events: none;
+  will-change: transform;
+}
+.topbar-dropdown button:hover::before { animation: btnSweep .55s ease forwards; }
 
 main {
   position: relative; z-index: 2;
