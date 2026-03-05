@@ -233,10 +233,25 @@ a:hover .arr { transform: translateX(3px); }
   margin: 0 auto;
   display: flex; flex-direction: row; align-items: center; gap: .65rem;
 }
+.player-track-clip {
+  overflow: hidden;
+  max-width: 14rem;
+  flex-shrink: 0;
+}
 .player-track-name {
+  display: inline-block;
   font-size: .65rem; letter-spacing: .2em; color: var(--ice);
   text-transform: uppercase; white-space: nowrap;
-  flex-shrink: 0;
+}
+.player-track-name.scrolling {
+  animation: trackScroll 11s ease-in-out infinite;
+}
+@keyframes trackScroll {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(0); }
+  65%  { transform: translateX(var(--scroll-dist, 0px)); }
+  85%  { transform: translateX(var(--scroll-dist, 0px)); }
+  100% { transform: translateX(0); }
 }
 .player-time-disp {
   font-size: .55rem; letter-spacing: .1em; color: rgba(200,230,255,.4);
@@ -344,11 +359,8 @@ a:hover .arr { transform: translateX(3px); }
   .player { padding: .6rem 1.25rem; }
   .player-inner { width: 100%; }
   .player-volume-row { display: none; }
+  .player-track-clip { max-width: 40vw; }
   .player-track-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 40vw;
     font-size: clamp(.35rem, 1.8vw, .55rem);
     text-align: left;
   }
@@ -425,7 +437,7 @@ a:hover .arr { transform: translateX(3px); }
     <div class="player-volume-row">
       <input class="player-vol-slider" id="volSlider" type="range" min="0" max="1" step="0.01" value="1">
     </div>
-    <span class="player-track-name" id="playerTrack">—</span>
+    <div class="player-track-clip"><span class="player-track-name" id="playerTrack">—</span></div>
   </div>
 </div>
 <audio id="audio" preload="metadata"></audio>
@@ -553,16 +565,25 @@ function fmt(t) {
   return `${Math.floor(t/60)}:${Math.floor(t%60).toString().padStart(2,'0')}`;
 }
 
+function updateMarquee() {
+  const clip = playerTrack.parentElement;
+  const overflow = playerTrack.scrollWidth - clip.clientWidth;
+  if (overflow > 2) {
+    playerTrack.style.setProperty('--scroll-dist', `-${overflow}px`);
+    playerTrack.classList.add('scrolling');
+  } else {
+    playerTrack.classList.remove('scrolling');
+  }
+}
+
 function loadTrack(idx) {
   if (!tracks.length) return;
   trackIdx = ((idx % tracks.length) + tracks.length) % tracks.length;
   audio.src = tracks[trackIdx].url;
   const title = tracks[trackIdx].title;
-  playerTrack.textContent = title;
-  playerTrack.style.width = playerTrack.offsetWidth + 'px';
-  playerTrack.style.whiteSpace = 'nowrap';
+  playerTrack.classList.remove('scrolling');
   scrambleResolve(title, t => { playerTrack.textContent = t; }, 16, 25, () => {
-    playerTrack.style.whiteSpace = '';
+    updateMarquee();
   });
   if (!audio.paused) audio.play();
 }
