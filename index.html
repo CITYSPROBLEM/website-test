@@ -242,6 +242,7 @@ h1 {
   font-size: clamp(1rem, 5vw, 4rem);
   letter-spacing: .04em; line-height: 1;
   white-space: nowrap;
+  text-align: center;
   color: var(--text);
   margin-bottom: clamp(2rem, 5vh, 4rem);
   opacity: 0;
@@ -646,68 +647,15 @@ function scrambleResolve(original, setText, steps = 16, stepMs = 25, onComplete)
 const h1El   = document.querySelector('h1');
 const h1Orig = 'CITYSPROBLEM';
 let cancelH1;
-let h1Spans  = [];
-
-document.fonts.ready.then(() => {
-  h1El.textContent = '';
-  h1Spans = h1Orig.split('').map(c => {
-    const s = document.createElement('span');
-    s.textContent = c;
-    s.style.display = 'inline-block';
-    s.style.textAlign = 'center';
-    h1El.appendChild(s);
-    return s;
-  });
-  requestAnimationFrame(() => {
-    h1Spans.forEach(s => { s.style.width = s.offsetWidth + 'px'; });
-  });
-});
-
 h1El.addEventListener('animationend', e => {
   if (e.animationName === 'glowFadeIn') {
     h1El.style.opacity = '1';
     h1El.style.animation = 'glowPulse 4s ease-in-out infinite';
   }
 });
-
-function scrambleH1() {
-  let rafId, last = 0;
-  function frame(ts) {
-    if (ts - last >= 25) {
-      last = ts;
-      h1Spans.forEach((s, i) => {
-        s.textContent = glyphSet[Math.floor(Math.random() * glyphSet.length)];
-      });
-    }
-    rafId = requestAnimationFrame(frame);
-  }
-  rafId = requestAnimationFrame(frame);
-  return () => cancelAnimationFrame(rafId);
-}
-
-function resolveH1() {
-  let step = 0, last = 0, rafId;
-  const steps = 16;
-  function frame(ts) {
-    if (ts - last >= 25) {
-      last = ts;
-      h1Spans.forEach((s, i) => {
-        s.textContent = i < (step / steps) * h1Orig.length
-          ? h1Orig[i]
-          : glyphSet[Math.floor(Math.random() * glyphSet.length)];
-      });
-      if (++step > steps) {
-        h1Spans.forEach((s, i) => { s.textContent = h1Orig[i]; });
-        return;
-      }
-    }
-    rafId = requestAnimationFrame(frame);
-  }
-  rafId = requestAnimationFrame(frame);
-  return () => cancelAnimationFrame(rafId);
-}
-
 h1El.addEventListener('mouseenter', () => {
+  h1El.style.width = h1El.offsetWidth + 'px';
+  h1El.style.height = h1El.offsetHeight + 'px';
   h1El.style.opacity = '1';
   h1El.style.animation = 'glowPulse 4s ease-in-out infinite';
   cancelH1?.();
@@ -715,11 +663,14 @@ h1El.addEventListener('mouseenter', () => {
   void h1El.offsetWidth;
   h1El.classList.add('chroma');
   setTimeout(() => h1El.classList.remove('chroma'), 500);
-  cancelH1 = scrambleH1();
+  cancelH1 = scrambleLoop(h1Orig, t => { h1El.textContent = t; });
 });
 h1El.addEventListener('mouseleave', () => {
   cancelH1?.();
-  cancelH1 = resolveH1();
+  cancelH1 = scrambleResolve(h1Orig, t => { h1El.textContent = t; }, 16, 25, () => {
+    h1El.style.width = '';
+    h1El.style.height = '';
+  });
 });
 
 /* button scramble */
