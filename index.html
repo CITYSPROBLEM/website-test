@@ -137,12 +137,9 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
 .topbar-dropdown {
   position: fixed; top: 72px; right: 0;
   width: 200px; z-index: 199;
-  background: rgba(4,6,15,.85);
-  border-left: 1px solid rgba(0,212,255,.12);
-  border-bottom: 1px solid rgba(0,212,255,.12);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  flex-direction: column;
+  background: none;
+  flex-direction: column; gap: .5rem;
+  padding: .5rem;
   display: none;
 }
 .topbar-dropdown.open {
