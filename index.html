@@ -654,6 +654,11 @@ h1El.addEventListener('animationend', e => {
     h1El.style.animation = 'glowPulse 4s ease-in-out infinite';
   }
 });
+function applyH1Centering() {
+  const overflow = h1El.scrollWidth - h1El.clientWidth;
+  h1El.style.transform = overflow > 0 ? `translateX(${-(overflow / 2)}px)` : '';
+}
+
 h1El.addEventListener('mouseenter', () => {
   h1El.style.width = h1El.offsetWidth + 'px';
   h1El.style.height = h1El.offsetHeight + 'px';
@@ -664,11 +669,12 @@ h1El.addEventListener('mouseenter', () => {
   void h1El.offsetWidth;
   h1El.classList.add('chroma');
   setTimeout(() => h1El.classList.remove('chroma'), 500);
-  cancelH1 = scrambleLoop(h1Orig, t => { h1El.textContent = t; });
+  cancelH1 = scrambleLoop(h1Orig, t => { h1El.textContent = t; applyH1Centering(); });
 });
 h1El.addEventListener('mouseleave', () => {
   cancelH1?.();
-  cancelH1 = scrambleResolve(h1Orig, t => { h1El.textContent = t; }, 16, 25, () => {
+  cancelH1 = scrambleResolve(h1Orig, t => { h1El.textContent = t; applyH1Centering(); }, 16, 25, () => {
+    h1El.style.transform = '';
     h1El.style.width = '';
     h1El.style.height = '';
   });
