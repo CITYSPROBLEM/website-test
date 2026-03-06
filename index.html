@@ -135,12 +135,14 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   border-bottom: 1px solid rgba(0,212,255,.12);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  flex-direction: column; gap: .4rem;
+  flex-direction: column; gap: .65rem;
   padding: .5rem;
   display: none;
 }
 .topbar-dropdown.open {
   display: flex;
+}
+.topbar-dropdown.open:not(.centered) {
   animation: dropDown .2s ease forwards;
 }
 @keyframes dropDown {
@@ -247,13 +249,6 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   border: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-}
-.topbar-dropdown.centered.open {
-  animation: dropCenterIn .3s ease forwards;
-}
-@keyframes dropCenterIn {
-  from { opacity: 0; transform: translate(-50%, calc(-50% - 10px)); }
-  to   { opacity: 1; transform: translate(-50%, -50%); }
 }
 
 /* expanded menu: corner close button */
@@ -660,7 +655,7 @@ a:hover .arr { transform: translateX(3px); }
   font-size: .7rem; line-height: 2;
   letter-spacing: .05em; color: rgba(200,230,255,.7);
 }
-.bio-press-links { display: flex; flex-direction: column; gap: .5rem; }
+.bio-press-links { display: flex; flex-direction: column; gap: .65rem; }
 .bio-press-links a {
   width: auto; padding: .5rem .75rem;
   font-size: .58rem; letter-spacing: .13em;
@@ -1227,6 +1222,56 @@ function stopDdScramble() {
 
 function menuCenteredScale() { return window.innerWidth <= 768 ? 1.4 : 2; }
 
+function animateBracketsExpand(fromX, fromY) {
+  const btns = [...menuDropdown.querySelectorAll('button')];
+  if (!btns.length) return;
+  btns.forEach(b => { b.style.backgroundImage = 'none'; });
+
+  const cssScale = btns[0].getBoundingClientRect().width / btns[0].offsetWidth;
+  const arm = Math.round(11 * cssScale);
+  const bw  = Math.max(1, Math.round(2 * cssScale));
+
+  /* target: button corners at current (centered) position — measure now, before dropdown moves */
+  const defs = [];
+  btns.forEach(btn => {
+    const r = btn.getBoundingClientRect();
+    defs.push(
+      { tx: r.left,        ty: r.top,          sides: ['Top',    'Left']  },
+      { tx: r.right - arm, ty: r.top,          sides: ['Top',    'Right'] },
+      { tx: r.left,        ty: r.bottom - arm, sides: ['Bottom', 'Left']  },
+      { tx: r.right - arm, ty: r.bottom - arm, sides: ['Bottom', 'Right'] }
+    );
+  });
+
+  const ox = fromX - arm / 2;
+  const oy = fromY - arm / 2;
+
+  const dists   = defs.map(({ tx, ty }) => Math.hypot(tx - ox, ty - oy));
+  const maxDist = Math.max(...dists);
+
+  const els = defs.map(({ sides }) => {
+    const el = _makeInnerBracketEl(ox, oy, sides, arm, bw);
+    el.style.opacity = '0';
+    return el;
+  });
+
+  void els[0].offsetHeight;
+  requestAnimationFrame(() => {
+    els.forEach((el, i) => {
+      const t   = maxDist > 0 ? dists[i] / maxDist : 0;
+      const dur = +(0.053 + 0.297 * t).toFixed(3);
+      el.style.transition = `transform ${dur}s ease-out, opacity .08s ease`;
+      el.style.transform  = `translate(${defs[i].tx - ox}px, ${defs[i].ty - oy}px)`;
+      el.style.opacity    = '1';
+    });
+  });
+
+  setTimeout(() => {
+    els.forEach(el => el.remove());
+    btns.forEach(b => { b.style.backgroundImage = ''; });
+  }, 500);
+}
+
 function expandMenu() {
   if (menuExpanded) return;
   menuExpanded = true;
@@ -1289,32 +1334,25 @@ function expandMenu() {
   menuBtn.style.pointerEvents = 'none';
   menuCloseBtnEl.classList.add('visible');
 
-  /* show dropdown centered so we can measure it, suppress keyframe */
+  /* show dropdown centered so we can measure it */
   menuDropdown.classList.add('open', 'centered');
-  menuDropdown.style.animation = 'none';
 
-  /* compute offset from hamburger position to centered position */
-  const ddRect      = menuDropdown.getBoundingClientRect();
-  const startCX     = window.innerWidth  - ddRect.width  / 2; /* hamburger: right-aligned */
-  const startCY     = 72                 + ddRect.height / 2; /* hamburger: below topbar  */
-  const centeredCX  = ddRect.left + ddRect.width  / 2;
-  const centeredCY  = ddRect.top  + ddRect.height / 2;
-  const offsetX     = startCX - centeredCX;
-  const offsetY     = startCY - centeredCY;
+  /* bracket spread from hamburger — measure while dropdown is centered */
+  const hr = menuBtn.getBoundingClientRect();
+  animateBracketsExpand((hr.left + hr.right) / 2, (hr.top + hr.bottom) / 2);
 
-  /* snap dropdown to hamburger position, scramble buttons, then fly to center */
+  /* fade dropdown in at centered position while brackets spread */
   menuDropdown.style.transition = 'none';
-  menuDropdown.style.transform  = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+  menuDropdown.style.transform  = `translate(-50%, -50%) scale(${menuCenteredScale()})`;
   menuDropdown.style.opacity    = '0';
   startDdScramble();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      menuDropdown.style.transition = 'transform .45s cubic-bezier(.4,0,.2,1), opacity .3s ease';
-      menuDropdown.style.transform  = `translate(-50%, -50%) scale(${menuCenteredScale()})`;
+      menuDropdown.style.transition = 'opacity .3s ease';
       menuDropdown.style.opacity    = '1';
     });
   });
-  setTimeout(stopDdScramble, 460);
+  setTimeout(stopDdScramble, 360);
 }
 
 function collapseMenu() {
@@ -1376,7 +1414,11 @@ function collapseMenu() {
   menuBtn.style.pointerEvents = '';
   menuCloseBtnEl.classList.remove('visible');
 
-  /* scramble buttons then fly dropdown back to hamburger position */
+  /* brackets converge to hamburger, dropdown fades out simultaneously */
+  const hr = menuBtn.getBoundingClientRect();
+  animateBrackets((hr.left + hr.right) / 2, (hr.top + hr.bottom) / 2);
+
+  /* scramble buttons then fade dropdown out */
   startDdScramble();
   const ddRect     = menuDropdown.getBoundingClientRect();
   const endCX      = window.innerWidth  - ddRect.width  / 2;
@@ -1598,7 +1640,6 @@ function closeAllPanels() {
   allPanels.forEach(p => p.classList.remove('open'));
   bioBackdrop.classList.remove('active');
   menuDropdown.style.cssText    = '';
-  menuDropdown.style.animation  = 'none';
   menuDropdown.style.transform  = `translate(-50%, -50%) scale(${menuCenteredScale()})`;
   menuDropdown.style.opacity    = '0';
   menuDropdown.classList.add('open', 'centered');
