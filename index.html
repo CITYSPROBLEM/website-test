@@ -521,6 +521,8 @@ a:hover .arr { transform: translateX(3px); }
 .player-vol-slider::-moz-range-track { height: 2px; background: rgba(0,212,255,.15); }
 
 @media (max-width: 768px) {
+  .topbar-dropdown.centered { transform: translate(-50%, -50%) scale(1.4); }
+
   /* no custom cursor on touch devices */
   html, body { cursor: auto; overflow-x: hidden; overflow-y: auto; touch-action: pan-y; overscroll-behavior-x: none; max-width: 100vw; }
   .topbar { background: linear-gradient(to bottom, #030a14 0%, rgba(4,6,15,.45) 100%); }
@@ -1223,6 +1225,8 @@ function stopDdScramble() {
   );
 }
 
+function menuCenteredScale() { return window.innerWidth <= 768 ? 1.4 : 2; }
+
 function expandMenu() {
   if (menuExpanded) return;
   menuExpanded = true;
@@ -1306,7 +1310,7 @@ function expandMenu() {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       menuDropdown.style.transition = 'transform .45s cubic-bezier(.4,0,.2,1), opacity .3s ease';
-      menuDropdown.style.transform  = 'translate(-50%, -50%) scale(2)';
+      menuDropdown.style.transform  = `translate(-50%, -50%) scale(${menuCenteredScale()})`;
       menuDropdown.style.opacity    = '1';
     });
   });
@@ -1498,7 +1502,7 @@ function animateBrackets(cursorX, cursorY) {
       const t   = maxDist > 0 ? dists[i] / maxDist : 0;
       const dur = +(0.053 + 0.297 * t).toFixed(3);
       const fd  = +(Math.max(0, dur - 0.04)).toFixed(3);
-      el.style.transition = `transform ${dur}s ease-in, opacity .10s ease ${fd}s`;
+      el.style.transition = `transform ${dur}s ease-out, opacity .10s ease ${fd}s`;
       el.style.transform  = `translate(${cxAbs - defs[i].sx}px,${cyAbs - defs[i].sy}px)`;
       el.style.opacity    = '0';
     });
@@ -1595,7 +1599,7 @@ function closeAllPanels() {
   bioBackdrop.classList.remove('active');
   menuDropdown.style.cssText    = '';
   menuDropdown.style.animation  = 'none';
-  menuDropdown.style.transform  = 'translate(-50%, -50%) scale(2)';
+  menuDropdown.style.transform  = `translate(-50%, -50%) scale(${menuCenteredScale()})`;
   menuDropdown.style.opacity    = '0';
   menuDropdown.classList.add('open', 'centered');
   animateBracketsReverse();
