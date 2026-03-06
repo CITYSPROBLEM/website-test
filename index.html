@@ -491,7 +491,7 @@ a:hover .arr { transform: translateX(3px); }
   .player { padding: .6rem 1.25rem; }
   .player-inner { width: 100%; }
   .player-volume-row { display: none; }
-  .player-counter, .eq-bars { display: none; }
+  .player-counter { display: none; }
   .player-btn-shuffle { cursor: auto; }
   .player-track-clip { max-width: 40vw; }
   .player-track-name {
@@ -532,28 +532,6 @@ a:hover .arr { transform: translateX(3px); }
   color: rgba(200,230,255,.3);
   flex-shrink: 0; user-select: none; white-space: nowrap;
 }
-
-/* ── EQ bars ──────────────────────────────────────── */
-.eq-bars {
-  display: flex; align-items: flex-end; gap: 2px;
-  height: 12px; flex-shrink: 0;
-  opacity: 0; transition: opacity .3s;
-}
-.eq-bars.playing { opacity: 1; }
-.eq-bars span {
-  display: block; width: 2px; height: 3px;
-  background: var(--ice);
-  box-shadow: 0 0 4px rgba(0,212,255,.6);
-  border-radius: 1px;
-}
-.eq-bars.playing span:nth-child(1) { animation: eq1 .55s ease-in-out infinite alternate; }
-.eq-bars.playing span:nth-child(2) { animation: eq2 .45s .1s ease-in-out infinite alternate; }
-.eq-bars.playing span:nth-child(3) { animation: eq3 .7s .05s ease-in-out infinite alternate; }
-.eq-bars.playing span:nth-child(4) { animation: eq4 .4s .15s ease-in-out infinite alternate; }
-@keyframes eq1 { to { height: 10px; } }
-@keyframes eq2 { to { height: 12px; } }
-@keyframes eq3 { to { height:  7px; } }
-@keyframes eq4 { to { height: 11px; } }
 
 /* ── bio panel ────────────────────────────────────── */
 .bio-backdrop {
@@ -702,7 +680,6 @@ a:hover .arr { transform: translateX(3px); }
     <div class="player-volume-row">
       <input class="player-vol-slider" id="volSlider" type="range" min="0" max="1" step="0.01" value="1">
     </div>
-    <div class="eq-bars" id="eqBars"><span></span><span></span><span></span><span></span></div>
     <div class="player-track-clip"><span class="player-track-name" id="playerTrack">—</span></div>
   </div>
 </div>
@@ -847,7 +824,6 @@ const btnPlay     = document.getElementById('btnPlay');
 const btnPrev     = document.getElementById('btnPrev');
 const btnNext     = document.getElementById('btnNext');
 const btnShuffle  = document.getElementById('btnShuffle');
-const eqBars      = document.getElementById('eqBars');
 const playerCounter = document.getElementById('playerCounter');
 
 let shuffleOn = false;
@@ -898,7 +874,6 @@ function loadTrack(idx) {
 function setPlaying(v) {
   btnPlay.textContent = v ? '' : '▶\uFE0E';
   btnPlay.classList.toggle('playing', v);
-  eqBars.classList.toggle('playing', v);
 }
 
 if (tracks.length) loadTrack(0);
