@@ -391,9 +391,8 @@ const logoEl         = document.querySelector('.topbar-logo');
 /* slide-in panels — defined early so collapseMenu can close them */
 const bioBackdrop = document.getElementById('bioBackdrop');
 const allPanels   = [
-  document.getElementById('bioPanel'),
-  document.getElementById('musicPanel'),
   document.getElementById('socialsPanel'),
+  document.getElementById('contactPanel'),
 ];
 
 let titleFontSzNatural = 0;
@@ -401,7 +400,7 @@ let cancelFlyer = null;
 let cancelTitleScramble = null;
 let cancelTitleResolve  = null;
 let cancelDdScrambles = [];
-const ddBtnOriginals = ['About', 'Music', 'Socials'];
+const ddBtnOriginals = ['Socials', 'Contact'];
 
 function startDdScramble() {
   cancelDdScrambles.forEach(fn => fn?.());
@@ -495,6 +494,14 @@ function expandMenu() {
   h1El.style.animation      = 'none';
   h1El.style.opacity        = '0';
   h1El.style.pointerEvents  = 'none';
+
+  /* fade out info section */
+  const infoEl = document.getElementById('infoSection');
+  if (infoEl) {
+    infoEl.style.transition = 'opacity .3s ease';
+    infoEl.style.opacity    = '0';
+    infoEl.style.pointerEvents = 'none';
+  }
 
   /* topbarFlyer has h1's font-size in CSS — no font-size override needed.
      Snap it to h1's position at scale(1) so it looks exactly like the h1. */
@@ -609,6 +616,15 @@ function collapseMenu() {
       applyH1Centering();
     });
   }, 420);
+
+  /* restore info section */
+  const infoEl = document.getElementById('infoSection');
+  if (infoEl) {
+    infoEl.style.transition    = 'opacity .4s ease .2s';
+    infoEl.style.opacity       = infoEl.classList.contains('visible') ? '1' : '0';
+    infoEl.style.pointerEvents = '';
+    setTimeout(() => { infoEl.style.transition = ''; }, 650);
+  }
 
   /* restore logo and hamburger */
   logoEl.style.opacity        = '1';
@@ -852,9 +868,8 @@ function closeAllPanels() {
 bioBackdrop.addEventListener('click', e => { e.stopPropagation(); closeAllPanels(); });
 
 const panelTriggers = [
-  { btnId: 'menuBioBtn',     panel: allPanels[0] },
-  { btnId: 'menuMusicBtn',   panel: allPanels[1] },
-  { btnId: 'menuSocialsBtn', panel: allPanels[2] },
+  { btnId: 'menuSocialsBtn', panel: allPanels[0] },
+  { btnId: 'menuContactBtn', panel: allPanels[1] },
 ];
 panelTriggers.forEach(({ btnId, panel }, i) => {
   const btn = document.getElementById(btnId);
@@ -878,7 +893,7 @@ panelTriggers.forEach(({ btnId, panel }, i) => {
   });
 });
 
-['bioClose', 'musicClose', 'socialsClose'].forEach(id => {
+['socialsClose', 'contactClose'].forEach(id => {
   const btn = document.getElementById(id);
   btn.addEventListener('click', e => { e.stopPropagation(); closeAllPanels(); });
   btn.addEventListener('mouseenter', () => document.body.classList.add('link-hover'));
@@ -1102,6 +1117,17 @@ infoSection.querySelectorAll('.info-block-header').forEach(header => {
   });
 });
 
+/* click outside info section to collapse open accordion */
+document.addEventListener('click', e => {
+  if (menuExpanded) return;
+  const openBlock = infoSection.querySelector('.info-block.open');
+  if (!openBlock || infoSection.contains(e.target)) return;
+  openBlock.classList.remove('open');
+  openBlock.querySelector('.info-block-content').style.maxHeight = '0px';
+  showAllBlocks();
+  if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
+});
+
 /* apply hover-scramble to all remaining static text elements
    (info section elements are excluded — no hover scramble there) */
 const infoSectionEls = new Set(infoSection.querySelectorAll('.bio-panel-label, .bio-text, .bio-press-links a'));
@@ -1119,11 +1145,13 @@ const infoSectionEls = new Set(infoSection.querySelectorAll('.bio-panel-label, .
 ].forEach(addScrambleHover);
 
 /* star field + shooting stars */
+const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
 const sc  = document.getElementById('stars');
 const ctx = sc.getContext('2d');
-const dpr = window.devicePixelRatio || 1;
+const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 2);
 
-const stars = Array.from({ length: 180 }, () => {
+const stars = Array.from({ length: isMobile ? 80 : 180 }, () => {
   const purple = Math.random() > 0.85;
   return {
     x: Math.random(), y: Math.random(),
@@ -1148,9 +1176,11 @@ let resizeTimer;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resizeSC, 150); });
 
 (function drawStars() {
-  /* cursor ring spring — merged into single rAF loop */
-  rx += (mx - rx) * .25; ry += (my - ry) * .25;
-  ring.style.transform = `translate(${rx}px,${ry}px)`;
+  /* cursor ring spring — skip on mobile (ring is hidden) */
+  if (!isMobile) {
+    rx += (mx - rx) * .25; ry += (my - ry) * .25;
+    ring.style.transform = `translate(${rx}px,${ry}px)`;
+  }
 
   const W = innerWidth, H = innerHeight;
   ctx.clearRect(0, 0, W, H);
@@ -1178,12 +1208,12 @@ window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer
     ctx.fill();
   }
 
-  /* sync grain to draw loop every 6 frames */
-  if (++grainFrame % 6 === 0)
+  /* sync grain to draw loop — skip on mobile (grain hidden, SVG re-render is expensive) */
+  if (!isMobile && ++grainFrame % 6 === 0)
     turbEl.setAttribute('seed', (noiseSeed = (noiseSeed + 1) % 200));
 
-  /* shooting stars */
-  if (Math.random() < 0.004) {
+  /* shooting stars — skip on mobile */
+  if (!isMobile && Math.random() < 0.004) {
     shoots.push({
       x: Math.random() * W * 0.8,
       y: Math.random() * H * 0.3,
