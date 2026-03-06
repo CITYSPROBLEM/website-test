@@ -77,6 +77,25 @@ function settleParams(text) {
    Same 25 ms/step speed as settleParams; capped at 20 steps so long paragraphs
    don't drag on appear.  Do NOT call this without a prior scrambleLoop running,
    or the text will start scrambled for one frame before resolving. */
+/* scramble immediately, then begin settling early enough that the settle
+   finishes at exactly targetMs from now — use for animations with a known duration */
+function scrambleThenSettleAt(text, setText, targetMs) {
+  const stepMs   = 25;
+  const steps    = Math.max(4, Math.min(Math.floor(targetMs / stepMs), text.replace(/ /g, '').length));
+  const startAt  = Math.max(0, targetMs - steps * stepMs);
+  let cancelLoop = scrambleLoop(text, setText, 30);
+  let cancelSettle = null;
+  const timer = setTimeout(() => {
+    cancelLoop?.(); cancelLoop = null;
+    cancelSettle = scrambleResolve(text, setText, steps, stepMs);
+  }, startAt);
+  return function cancel() {
+    clearTimeout(timer);
+    cancelLoop?.(); cancelLoop = null;
+    cancelSettle?.(); cancelSettle = null;
+  };
+}
+
 function settleIn(text, setText, onComplete) {
   const steps = Math.max(6, Math.min(20, text.replace(/ /g, '').length));
   return scrambleResolve(text, setText, steps, 25, onComplete);
@@ -104,6 +123,9 @@ const h1El   = document.querySelector('h1');
 const h1Orig = 'CITYSPROBLEM';
 let cancelH1;
 let menuExpanded = false;
+let menuOpenScrollY = 0;
+let menuReturnScrollY = 0;
+let menuJustClosed = false;
 let h1FadeUpDone = false;
 
 function h1Settle() {
@@ -477,6 +499,20 @@ function animateBracketsExpand(fromX, fromY) {
 function expandMenu() {
   if (menuExpanded) return;
   menuExpanded = true;
+  menuOpenScrollY = window.scrollY;
+
+  /* capture scroll return target now, before any browser viewport adjustment */
+  {
+    const _hero = document.querySelector('.hero');
+    const _vh   = window.innerHeight, _mid = _vh / 2;
+    const _hr   = _hero.getBoundingClientRect();
+    const _ir   = infoSection.getBoundingClientRect();
+    const _hd   = Math.abs((_hr.top + _hero.offsetHeight / 2) - _mid);
+    const _id   = Math.abs((_ir.top + infoSection.offsetHeight / 2) - _mid);
+    menuReturnScrollY = (_id < _hd)
+      ? Math.max(0, window.scrollY + _ir.top - (_vh - infoSection.offsetHeight) / 2)
+      : 0;
+  }
 
   /* stop any active scramble and restore text */
   cancelH1?.();
@@ -509,7 +545,7 @@ function expandMenu() {
   topbarFlyer.style.transform     = `translateX(-50%) translateY(calc(-50% + ${startDY}px))`;
   topbarFlyer.style.letterSpacing = '';
   topbarFlyer.style.opacity       = '1';
-  cancelFlyer = scrambleLoop(h1Orig, t => { topbarFlyer.textContent = t; }, 30);
+  cancelFlyer = scrambleThenSettleAt(h1Orig, t => { topbarFlyer.textContent = t; }, 450);
 
   /* fly up and scale down to topbar size, easing letter-spacing to match topbarTitle */
   requestAnimationFrame(() => {
@@ -523,15 +559,15 @@ function expandMenu() {
   /* after flight: stop scramble, hand off from flyer to topbarTitle (inside topbar) */
   setTimeout(() => {
     cancelFlyer?.(); cancelFlyer = null;
-    /* start topbarTitle showing the last scrambled state, then settle */
-    topbarTitle.textContent         = topbarFlyer.textContent;
+    /* flyer already settled — hand off directly, no further resolve needed */
+    topbarTitle.textContent         = h1Orig;
     topbarTitle.style.opacity       = '1';
     topbarTitle.style.pointerEvents = 'auto';
     topbarFlyer.style.transition    = 'none';
     topbarFlyer.style.opacity       = '0';
     topbarFlyer.style.transform     = 'translateX(-50%) translateY(-50%)';
     topbarFlyer.style.letterSpacing = '';
-    cancelTitleResolve = scrambleResolve(h1Orig, t => { topbarTitle.textContent = t; }, ...settleParams(h1Orig));
+    cancelTitleResolve = null;
   }, 460);
 
   /* fade out logo */
@@ -555,14 +591,16 @@ function expandMenu() {
   menuDropdown.style.transition = 'none';
   menuDropdown.style.transform  = `translate(-50%, -50%) scale(${menuCenteredScale()})`;
   menuDropdown.style.opacity    = '0';
-  startDdScramble();
+  const _btns = menuDropdown.querySelectorAll('button');
+  cancelDdScrambles = ddBtnOriginals.map((orig, i) =>
+    scrambleThenSettleAt(orig, t => { _btns[i].textContent = t; }, 300)
+  );
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       menuDropdown.style.transition = 'opacity .3s ease';
       menuDropdown.style.opacity    = '1';
     });
   });
-  setTimeout(stopDdScramble, 360);
 }
 
 function collapseMenu() {
@@ -588,7 +626,7 @@ function collapseMenu() {
   topbarFlyer.style.transform     = `translateX(-50%) translateY(-50%) scale(${flyerStartScale})`;
   topbarFlyer.style.letterSpacing = '0.14em';
   topbarFlyer.style.opacity       = '1';
-  cancelFlyer = scrambleLoop(h1Orig, t => { topbarFlyer.textContent = t; }, 30);
+  cancelFlyer = scrambleThenSettleAt(h1Orig, t => { topbarFlyer.textContent = t; }, 400);
 
   /* fly down to h1's position at h1's natural scale */
   requestAnimationFrame(() => {
@@ -602,8 +640,8 @@ function collapseMenu() {
   /* after flight: stop scramble, restore h1, reset flyer */
   setTimeout(() => {
     cancelFlyer?.(); cancelFlyer = null;
-    /* h1 starts showing the last scrambled state, then settles while glow fades in */
-    h1El.textContent = topbarFlyer.textContent;
+    /* flyer already settled — hand off directly, no further resolve needed */
+    h1El.textContent = h1Orig;
     topbarFlyer.style.transition    = 'none';
     topbarFlyer.style.opacity       = '0';
     topbarFlyer.style.transform     = 'translateX(-50%) translateY(-50%)';
@@ -611,10 +649,8 @@ function collapseMenu() {
     h1El.style.pointerEvents = '';
     h1El.style.opacity       = '1';
     h1El.style.animation     = 'glowFadeIn .9s ease forwards';
-    cancelH1 = scrambleResolve(h1Orig, t => { h1El.textContent = t; applyH1Centering(); }, ...settleParams(h1Orig), () => {
-      cancelH1 = null;
-      applyH1Centering();
-    });
+    cancelH1 = null;
+    applyH1Centering();
   }, 420);
 
   /* restore info section */
@@ -625,6 +661,11 @@ function collapseMenu() {
     infoEl.style.pointerEvents = '';
     setTimeout(() => { infoEl.style.transition = ''; }, 650);
   }
+
+  /* return to the scroll position captured at menu-open time */
+  menuJustClosed = true;
+  window.scrollTo({ top: menuReturnScrollY, behavior: 'smooth' });
+  setTimeout(() => { menuJustClosed = false; }, 900);
 
   /* restore logo and hamburger */
   logoEl.style.opacity        = '1';
@@ -795,11 +836,7 @@ function openPanel(panel, cursorX, cursorY) {
   /* scramble all panel text as the panel slides in; resolve once it lands */
   const els   = [...panel.querySelectorAll(PANEL_TEXT_SEL)];
   const texts = els.map(el => el.textContent);
-  const loops = els.map((el, i) => scrambleLoop(texts[i], t => { el.textContent = t; }, 30));
-  setTimeout(() => {
-    loops.forEach(c => c());
-    els.forEach((el, i) => settleIn(texts[i], t => { el.textContent = t; }));
-  }, 360);
+  els.forEach((el, i) => scrambleThenSettleAt(texts[i], t => { el.textContent = t; }, 350));
 }
 function animateBracketsReverse() {
   const btns = [...menuDropdown.querySelectorAll('button')];
@@ -950,18 +987,34 @@ const infoSection = document.getElementById('infoSection');
   function revealInfo() {
     infoLoops = infoLabelEls.map((el, i) => scrambleLoop(infoLabelOrig[i], t => { el.textContent = t; }, 30));
     infoSection.classList.add('visible');
-    infoSection.addEventListener('animationend', e => {
-      if (e.animationName !== 'fadeUp') return;
+
+    let settled = false;
+    function onFadeUpEnd() {
+      if (settled) return;
+      settled = true;
       infoLoops.forEach(c => c()); infoLoops = null;
       infoLabelEls.forEach((el, i) => settleIn(infoLabelOrig[i], t => { el.textContent = t; }));
       infoSection.style.animation = 'none';
       infoSection.style.opacity = '1';
-    }, { once: true });
+    }
+
+    /* primary: animationend — but don't use { once: true } so a bubbling child
+       animation doesn't consume the listener before fadeUp fires */
+    function onAnimEnd(e) {
+      if (e.target !== infoSection || e.animationName !== 'fadeUp') return;
+      infoSection.removeEventListener('animationend', onAnimEnd);
+      onFadeUpEnd();
+    }
+    infoSection.addEventListener('animationend', onAnimEnd);
+
+    /* fallback: if animationend never fires (animation blocked on some browsers),
+       guarantee the section becomes visible after the animation duration */
+    setTimeout(onFadeUpEnd, 1000);
   }
 
   const observer = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting) { revealInfo(); observer.disconnect(); }
-  }, { threshold: 0.1 });
+  }, { threshold: 0 });
   observer.observe(infoSection);
 }
 
@@ -970,6 +1023,7 @@ const infoSection = document.getElementById('infoSection');
   const heroEl = document.querySelector('.hero');
   let scrollTimer = null;
   window.addEventListener('scroll', () => {
+    if (menuExpanded || menuJustClosed) return;
     clearTimeout(scrollTimer);
     scrollTimer = setTimeout(() => {
       const vh = window.innerHeight;
@@ -1066,10 +1120,35 @@ function showAllBlocks() {
   });
 }
 
+/* animate scroll to targetY over duration ms using the same easing as the CSS transitions */
+function animateScrollTo(targetY, duration) {
+  const startY = window.scrollY;
+  const dist   = Math.max(0, targetY) - startY;
+  if (Math.abs(dist) < 1) return;
+  const t0 = performance.now();
+  /* ease-in-out — matches cubic-bezier(0.4, 0, 0.2, 1) closely */
+  function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+  (function frame(now) {
+    const t = Math.min((now - t0) / duration, 1);
+    window.scrollTo({ top: startY + dist * ease(t), behavior: 'instant' });
+    if (t < 1) requestAnimationFrame(frame);
+  })(t0);
+}
+
+/* return the vertical scroll position that centers the info section at a given height */
+function infoScrollCenter(finalH) {
+  const cs  = getComputedStyle(infoSection);
+  const pad = parseFloat(cs.paddingTop)    + parseFloat(cs.paddingBottom)
+            + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+  const totalH = finalH + pad;
+  return Math.max(0, window.scrollY + infoSection.getBoundingClientRect().top
+                 - (window.innerHeight - totalH) / 2);
+}
+
 /* accordion */
 infoSection.querySelectorAll('.info-block-header').forEach(header => {
   header.addEventListener('click', () => {
-    const block = header.closest('.info-block');
+    const block  = header.closest('.info-block');
     const isOpen = block.classList.contains('open');
 
     /* close any open block */
@@ -1079,40 +1158,32 @@ infoSection.querySelectorAll('.info-block-header').forEach(header => {
     });
 
     if (isOpen) {
-      /* closing — reveal other blocks and narrow the box */
+      /* closing — measure final height (sum of all header heights) before animating */
+      const allHeaders = Array.from(infoSection.querySelectorAll('.info-block-header'));
+      const finalH = allHeaders.reduce((s, h) => s + h.offsetHeight, 0);
+      const targetY = infoScrollCenter(finalH);
+
       showAllBlocks();
       if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
-      /* scroll to keep box centered throughout the collapse animation */
-      const startTimeClose = performance.now();
-      const closeFrame = () => {
-        const top = window.scrollY + infoSection.getBoundingClientRect().top
-                    - (window.innerHeight - infoSection.offsetHeight) / 2;
-        window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
-        if (performance.now() - startTimeClose < 420) requestAnimationFrame(closeFrame);
-      };
-      requestAnimationFrame(closeFrame);
+      animateScrollTo(targetY, 400);
     } else {
-      /* opening — hide other blocks, expand box, open content */
+      /* opening — measure final height (open header + content) before animating */
+      const content  = block.querySelector('.info-block-content');
+      const finalH   = block.querySelector('.info-block-header').offsetHeight + content.scrollHeight;
+      const targetY  = infoScrollCenter(finalH);
+
       hideOtherBlocks(block);
       if (window.innerWidth > 768) infoSection.style.width = expandedW + 'px';
-      const content = block.querySelector('.info-block-content');
-      const textEls = Array.from(content.querySelectorAll('.bio-text, .bio-press-links a'));
-      const textOrig = textEls.map(el => el.textContent);
-      const loops = textEls.map((el, i) => scrambleLoop(textOrig[i], t => { el.textContent = t; }, 30));
       block.classList.add('open');
       content.style.maxHeight = content.scrollHeight + 'px';
-      /* settle starts immediately, 16 steps × 20ms ≈ 417ms — matches the 400ms expand animation */
+      animateScrollTo(targetY, 400);
+
+      /* scramble-settle the revealed text */
+      const textEls  = Array.from(content.querySelectorAll('.bio-text, .bio-press-links a'));
+      const textOrig = textEls.map(el => el.textContent);
+      const loops    = textEls.map((el, i) => scrambleLoop(textOrig[i], t => { el.textContent = t; }, 30));
       loops.forEach(c => c());
       textEls.forEach((el, i) => scrambleResolve(textOrig[i], t => { el.textContent = t; }, 16, 20));
-      /* scroll to keep box centered throughout the expand animation */
-      const startTime = performance.now();
-      const animFrame = () => {
-        const top = window.scrollY + infoSection.getBoundingClientRect().top
-                    - (window.innerHeight - infoSection.offsetHeight) / 2;
-        window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
-        if (performance.now() - startTime < 420) requestAnimationFrame(animFrame);
-      };
-      requestAnimationFrame(animFrame);
     }
   });
 });
@@ -1122,10 +1193,16 @@ document.addEventListener('click', e => {
   if (menuExpanded) return;
   const openBlock = infoSection.querySelector('.info-block.open');
   if (!openBlock || infoSection.contains(e.target)) return;
+
+  const allHeaders = Array.from(infoSection.querySelectorAll('.info-block-header'));
+  const finalH  = allHeaders.reduce((s, h) => s + h.offsetHeight, 0);
+  const targetY = infoScrollCenter(finalH);
+
   openBlock.classList.remove('open');
   openBlock.querySelector('.info-block-content').style.maxHeight = '0px';
   showAllBlocks();
   if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
+  animateScrollTo(targetY, 400);
 });
 
 /* apply hover-scramble to all remaining static text elements
@@ -1144,100 +1221,15 @@ const infoSectionEls = new Set(infoSection.querySelectorAll('.bio-panel-label, .
   document.getElementById('menuCloseBtn'),
 ].forEach(addScrambleHover);
 
-/* star field + shooting stars */
+/* cursor ring spring + grain sync loop */
 const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-const sc  = document.getElementById('stars');
-const ctx = sc.getContext('2d');
-const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 2);
-
-const stars = Array.from({ length: isMobile ? 80 : 180 }, () => {
-  const purple = Math.random() > 0.85;
-  return {
-    x: Math.random(), y: Math.random(),
-    r: Math.random() * 1.4 + 0.2,
-    speed: Math.random() * 0.00015 + 0.00003,
-    base: Math.random() * 0.6 + 0.2,
-    twinkle: Math.random() * Math.PI * 2,
-    ts: Math.random() * 0.015 + 0.004,
-    fill: purple ? 'rgb(180,140,255)' : 'rgb(200,230,255)',
-  };
-});
-
-const shoots = [];
-
-function resizeSC() {
-  sc.width  = innerWidth  * dpr;
-  sc.height = innerHeight * dpr;
-  ctx.scale(dpr, dpr);
-}
-resizeSC();
-let resizeTimer;
-window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resizeSC, 150); });
-
-(function drawStars() {
-  /* cursor ring spring — skip on mobile (ring is hidden) */
+(function tick() {
   if (!isMobile) {
     rx += (mx - rx) * .25; ry += (my - ry) * .25;
     ring.style.transform = `translate(${rx}px,${ry}px)`;
+    if (++grainFrame % 6 === 0)
+      turbEl.setAttribute('seed', (noiseSeed = (noiseSeed + 1) % 200));
   }
-
-  const W = innerWidth, H = innerHeight;
-  ctx.clearRect(0, 0, W, H);
-
-  /* stars — alpha bucket batching (180 draws → ~20-30) */
-  const buckets = new Map();
-  stars.forEach(s => {
-    s.twinkle += s.ts;
-    s.y -= s.speed;
-    if (s.y < 0) { s.y = 1; s.x = Math.random(); }
-    const alpha = Math.round(s.base * (0.5 + 0.5 * Math.sin(s.twinkle)) * 20) / 20;
-    const key = s.fill + alpha;
-    let b = buckets.get(key);
-    if (!b) { b = { alpha, fill: s.fill, list: [] }; buckets.set(key, b); }
-    b.list.push(s);
-  });
-  for (const { alpha, fill, list } of buckets.values()) {
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = fill;
-    ctx.beginPath();
-    list.forEach(s => {
-      ctx.moveTo(s.x * W + s.r, s.y * H);
-      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
-    });
-    ctx.fill();
-  }
-
-  /* sync grain to draw loop — skip on mobile (grain hidden, SVG re-render is expensive) */
-  if (!isMobile && ++grainFrame % 6 === 0)
-    turbEl.setAttribute('seed', (noiseSeed = (noiseSeed + 1) % 200));
-
-  /* shooting stars — skip on mobile */
-  if (!isMobile && Math.random() < 0.004) {
-    shoots.push({
-      x: Math.random() * W * 0.8,
-      y: Math.random() * H * 0.3,
-      len: Math.random() * 90 + 60,
-      spd: Math.random() * 9 + 7,
-      ang: Math.PI / 4 + (Math.random() - 0.5) * 0.25,
-      life: 1,
-    });
-  }
-  for (let i = shoots.length - 1; i >= 0; i--) {
-    const s = shoots[i];
-    s.x   += Math.cos(s.ang) * s.spd;
-    s.y   += Math.sin(s.ang) * s.spd;
-    s.life -= 0.025;
-    if (s.life <= 0 || s.x > W || s.y > H) { shoots.splice(i, 1); continue; }
-    ctx.globalAlpha = s.life;
-    ctx.beginPath();
-    ctx.moveTo(s.x, s.y);
-    ctx.lineTo(s.x - Math.cos(s.ang) * s.len, s.y - Math.sin(s.ang) * s.len);
-    ctx.strokeStyle = 'rgb(220,240,255)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
-
-  ctx.globalAlpha = 1;
-  requestAnimationFrame(drawStars);
+  requestAnimationFrame(tick);
 })();

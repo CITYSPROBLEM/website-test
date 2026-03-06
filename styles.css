@@ -67,13 +67,6 @@ body::after {
   background: white;
 }
 
-canvas.stars {
-  position: fixed; inset: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-
 /* custom cursor */
 #cur {
   position: fixed; width: 6px; height: 6px;
@@ -617,9 +610,8 @@ a:hover .arr { transform: translateX(3px); }
     background: rgba(3,10,20,.97);
   }
 
-  /* remove fixed overlay layers */
-  body::after { display: none; }  /* scan lines */
-  .grain { display: none; }       /* film grain */
+  /* remove film grain (SVG re-render is expensive on mobile) */
+  .grain { display: none; }
 
   /* simplify aurora — blur filter is expensive */
   .aurora { filter: none; animation: none; opacity: .35; }
