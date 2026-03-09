@@ -857,21 +857,72 @@ document.querySelectorAll(
 document.querySelectorAll('.section-label').forEach(addScrambleHover);
 
 /* past shows year accordion */
-document.querySelectorAll('.past-shows-year').forEach(group => {
+const pastShowsYears = Array.from(document.querySelectorAll('.past-shows-year'));
+
+function closePastShowsYear(group) {
+  const list = group.querySelector('.past-shows-list');
+  group.classList.remove('open');
+  list.style.maxHeight = '0';
+  list.style.opacity   = '0';
+}
+
+function hideOtherPastShowsYears(openGroup) {
+  pastShowsYears
+    .filter(group => group !== openGroup)
+    .forEach(group => {
+      const h = group.offsetHeight;
+      group.style.overflow = 'hidden';
+      group.style.transition = 'none';
+      group.style.maxHeight = h + 'px';
+      group.style.opacity = '1';
+      group.offsetHeight;
+      group.style.transition = 'max-height .35s ease, opacity .25s ease';
+      group.style.maxHeight = '0';
+      group.style.opacity = '0';
+      group.style.pointerEvents = 'none';
+    });
+}
+
+function showAllPastShowsYears() {
+  pastShowsYears.forEach(group => {
+    if (!group.style.maxHeight) return;
+    const targetH = group.querySelector('.past-shows-year-btn').offsetHeight;
+    group.style.transition = 'max-height .35s ease, opacity .25s ease';
+    group.style.maxHeight = targetH + 'px';
+    group.style.opacity = '1';
+    group.style.pointerEvents = '';
+    setTimeout(() => {
+      group.style.transition = '';
+      group.style.maxHeight = '';
+      group.style.opacity = '';
+      group.style.overflow = '';
+    }, 370);
+  });
+}
+
+function resetPastShowsAccordion() {
+  const openGroup = pastShowsSection.querySelector('.past-shows-year.open');
+  if (!openGroup) return;
+  closePastShowsYear(openGroup);
+  showAllPastShowsYears();
+  followSectionCenter(pastShowsSection, 350);
+}
+
+pastShowsYears.forEach(group => {
   const btn   = group.querySelector('.past-shows-year-btn');
   const list  = group.querySelector('.past-shows-list');
+  const backBtn = group.querySelector('.past-shows-back-btn');
 
   btn.addEventListener('click', () => {
     const isOpen = group.classList.contains('open');
     if (isOpen) {
-      group.classList.remove('open');
-      list.style.maxHeight = '0';
-      list.style.opacity   = '0';
-      followSectionCenter(pastShowsSection, 350);
+      resetPastShowsAccordion();
     } else {
+      pastShowsYears.forEach(closePastShowsYear);
       group.classList.add('open');
       list.style.maxHeight = list.scrollHeight + 'px';
       list.style.opacity   = '1';
+      hideOtherPastShowsYears(group);
       followSectionCenter(pastShowsSection, 350);
       /* scramble-settle the revealed rows */
       Array.from(list.querySelectorAll('.date-date, .date-venue')).forEach(el => {
@@ -881,12 +932,25 @@ document.querySelectorAll('.past-shows-year').forEach(group => {
     }
   });
 
+  backBtn.addEventListener('click', () => {
+    resetPastShowsAccordion();
+  });
+
   btn.addEventListener('mouseenter', () => document.body.classList.add('link-hover'));
   btn.addEventListener('mouseleave', () => document.body.classList.remove('link-hover'));
+  backBtn.addEventListener('mouseenter', () => document.body.classList.add('link-hover'));
+  backBtn.addEventListener('mouseleave', () => document.body.classList.remove('link-hover'));
 });
 /* hover-scramble for past shows elements */
 document.querySelectorAll('.past-shows-year-btn').forEach(addScrambleHover);
+document.querySelectorAll('.past-shows-back-btn').forEach(addScrambleHover);
 document.querySelectorAll('.past-shows-list .date-date, .past-shows-list .date-venue').forEach(addScrambleHover);
+
+document.addEventListener('click', e => {
+  const openGroup = pastShowsSection.querySelector('.past-shows-year.open');
+  if (!openGroup || pastShowsSection.contains(e.target)) return;
+  resetPastShowsAccordion();
+});
 
 /* cursor hover for new interactive elements */
 document.querySelectorAll('.release-card, .glitch-wrap, .featured-link').forEach(el => {
