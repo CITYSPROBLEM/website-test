@@ -273,11 +273,8 @@ main::after {
   filter: blur(48px);
   pointer-events: none;
   will-change: transform, opacity;
-  animation: auroraPulse 5s ease-in-out infinite alternate;
-}
-@keyframes auroraPulse {
-  from { opacity: .6; transform: scale(1) translateX(-20px); }
-  to   { opacity: 1; transform: scale(1.2) translateX(20px); }
+  opacity: .7;
+  transition: opacity .3s ease;
 }
 
 h1 {
@@ -531,7 +528,10 @@ a:hover .arr { transform: translateX(3px); }
   .grain { display: none; }
 
   /* simplify aurora — blur filter is expensive */
-  .aurora { filter: none; animation: none; opacity: .35; }
+  .aurora { filter: none; opacity: .35; }
+
+  /* disable 3D tilt on touch */
+  .release-card, .featured-artwork-wrap { transform: none !important; }
 }
 
 @media (max-width: 768px) {
@@ -930,6 +930,8 @@ a:hover .arr { transform: translateX(3px); }
 .featured-artwork-wrap {
   width: clamp(140px, 35vw, 340px);
   flex-shrink: 0;
+  transform-style: preserve-3d;
+  transition: transform .25s ease-out;
 }
 .featured-art-img {
   width: 100%;
@@ -1028,6 +1030,8 @@ a:hover .arr { transform: translateX(3px); }
   background-image: none;
   overflow: visible;
   contain: none;
+  transform-style: preserve-3d;
+  transition: transform .25s ease-out;
 }
 .release-card::before { display: none; }
 .release-card:hover { background-image: none; }
