@@ -294,6 +294,22 @@ main {
   -webkit-backdrop-filter: blur(18px);
   text-align: center;
   opacity: 0;
+  /* TODO: re-enable internal scrolling once info section has enough content to require it
+  max-height: 70vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,212,255,.3) transparent;
+  */
+}
+/* TODO: re-enable with above
+.info-section::-webkit-scrollbar { width: 4px; }
+.info-section::-webkit-scrollbar-track { background: transparent; }
+.info-section::-webkit-scrollbar-thumb {
+  background: rgba(0,212,255,.3);
+  border-radius: 99px;
+}
+.info-section::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,.55); }
+*/
 }
 .info-section.visible {
   animation: fadeUp .9s ease forwards;
