@@ -24,13 +24,43 @@ function randGlyph(c) {
   return set[Math.floor(Math.random() * set.length)];
 }
 
-function scrambleLoop(original, setText, stepMs = 25) {
+function nonSpaceCharCount(text) {
+  return text.replace(/ /g, '').length;
+}
+
+function scramblePlan(original, maxChars = Infinity) {
+  const eligible = [];
+  original.split('').forEach((c, i) => {
+    if (c !== ' ') eligible.push(i);
+  });
+
+  if (!Number.isFinite(maxChars) || maxChars >= eligible.length) {
+    const fullRanks = new Map(eligible.map((idx, rank) => [idx, rank]));
+    return { count: eligible.length, ranks: fullRanks };
+  }
+
+  const limited = [];
+  const step = eligible.length / Math.max(1, maxChars);
+  for (let n = 0; n < maxChars; n++) {
+    limited.push(eligible[Math.floor(n * step)]);
+  }
+  const uniqueLimited = [...new Set(limited)];
+  return { count: uniqueLimited.length, ranks: new Map(uniqueLimited.map((idx, rank) => [idx, rank])) };
+}
+
+function accordionScrambleLimit(text) {
+  const total = nonSpaceCharCount(text);
+  return Math.min(total, Math.max(8, Math.min(16, Math.floor(total * 0.28))));
+}
+
+function scrambleLoop(original, setText, stepMs = 25, maxChars = Infinity) {
+  const plan = scramblePlan(original, maxChars);
   let rafId, last = 0;
   function frame(ts) {
     if (ts - last >= stepMs) {
       last = ts;
-      setText(original.split('').map(c =>
-        c === ' ' ? ' ' : randGlyph(c)
+      setText(original.split('').map((c, i) =>
+        c === ' ' || !plan.ranks.has(i) ? c : randGlyph(c)
       ).join(''));
     }
     rafId = requestAnimationFrame(frame);
@@ -39,16 +69,18 @@ function scrambleLoop(original, setText, stepMs = 25) {
   return () => cancelAnimationFrame(rafId);
 }
 
-function scrambleResolve(original, setText, steps = 16, stepMs = 25, onComplete) {
+function scrambleResolve(original, setText, steps = 16, stepMs = 25, onComplete, maxChars = Infinity) {
+  const plan = scramblePlan(original, maxChars);
   let step = 0, last = 0, rafId;
   /* starts at stepMs (full speed), slows quadratically to ~2× at the last step */
   function stepDelay(s) { return stepMs * (1 + Math.pow(s / steps, 2)); }
   function frame(ts) {
     if (ts - last >= stepDelay(step)) {
       last = ts;
+      const resolvedCount = Math.floor((step / steps) * plan.count);
       setText(original.split('').map((c, i) => {
         if (c === ' ') return ' ';
-        if (i < (step / steps) * original.length) return c;
+        if (!plan.ranks.has(i) || plan.ranks.get(i) < resolvedCount) return c;
         return randGlyph(c);
       }).join(''));
       if (++step > steps) { setText(original); onComplete?.(); return; }
@@ -79,15 +111,15 @@ function settleParams(text) {
    or the text will start scrambled for one frame before resolving. */
 /* scramble immediately, then begin settling early enough that the settle
    finishes at exactly targetMs from now — use for animations with a known duration */
-function scrambleThenSettleAt(text, setText, targetMs) {
+function scrambleThenSettleAt(text, setText, targetMs, maxChars = Infinity) {
   const stepMs   = 25;
-  const steps    = Math.max(4, Math.min(Math.floor(targetMs / stepMs), text.replace(/ /g, '').length));
+  const steps    = Math.max(4, Math.min(Math.floor(targetMs / stepMs), nonSpaceCharCount(text), Math.max(4, maxChars)));
   const startAt  = Math.max(0, targetMs - steps * stepMs);
-  let cancelLoop = scrambleLoop(text, setText, 30);
+  let cancelLoop = scrambleLoop(text, setText, 30, maxChars);
   let cancelSettle = null;
   const timer = setTimeout(() => {
     cancelLoop?.(); cancelLoop = null;
-    cancelSettle = scrambleResolve(text, setText, steps, stepMs);
+    cancelSettle = scrambleResolve(text, setText, steps, stepMs, null, maxChars);
   }, startAt);
   return function cancel() {
     clearTimeout(timer);
@@ -647,6 +679,11 @@ function followSectionCenter(targetEl = infoSection, duration = 400) {
   };
 }
 
+function syncSectionCenterState(targetEl = infoSection) {
+  centerScrollTarget = targetEl;
+  syncCenterScrollSpacer(targetEl);
+}
+
 /* accordion */
 infoSection.querySelectorAll('.info-block-header').forEach(header => {
   header.addEventListener('click', () => {
@@ -677,9 +714,9 @@ infoSection.querySelectorAll('.info-block-header').forEach(header => {
       /* scramble-settle the revealed text */
       const textEls  = Array.from(content.querySelectorAll('.bio-text, .bio-press-links a, .label-btn'));
       const textOrig = textEls.map(el => el.textContent);
-      const loops    = textEls.map((el, i) => scrambleLoop(textOrig[i], t => { el.textContent = t; }, 30));
+      const loops    = textEls.map((el, i) => scrambleLoop(textOrig[i], t => { el.textContent = t; }, 30, accordionScrambleLimit(textOrig[i])));
       loops.forEach(c => c());
-      textEls.forEach((el, i) => scrambleResolve(textOrig[i], t => { el.textContent = t; }, 16, 20));
+      textEls.forEach((el, i) => scrambleResolve(textOrig[i], t => { el.textContent = t; }, 16, 20, null, accordionScrambleLimit(textOrig[i])));
     }
   });
 });
@@ -768,7 +805,7 @@ infoSection.querySelectorAll('.label-group').forEach(group => {
       /* scramble-settle song links as they slide in */
       Array.from(songs.querySelectorAll('a')).forEach(a => {
         const text = a.textContent;
-        scrambleThenSettleAt(text, t => { a.textContent = t; }, 300);
+        scrambleThenSettleAt(text, t => { a.textContent = t; }, 300, accordionScrambleLimit(text));
       });
     }
   });
@@ -787,7 +824,7 @@ document.addEventListener('click', e => {
   resetLabelGroups(openBlock);
   showAllBlocks();
   if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
-  followSectionCenter(infoSection, 400);
+  syncSectionCenterState(infoSection);
 });
 
 /* apply hover-scramble to all remaining static text elements
@@ -900,12 +937,13 @@ function showAllPastShowsYears() {
   });
 }
 
-function resetPastShowsAccordion() {
+function resetPastShowsAccordion(shouldCenter = true) {
   const openGroup = pastShowsSection.querySelector('.past-shows-year.open');
   if (!openGroup) return;
   closePastShowsYear(openGroup);
   showAllPastShowsYears();
-  followSectionCenter(pastShowsSection, 350);
+  if (shouldCenter) followSectionCenter(pastShowsSection, 350);
+  else syncSectionCenterState(pastShowsSection);
 }
 
 pastShowsYears.forEach(group => {
@@ -927,7 +965,7 @@ pastShowsYears.forEach(group => {
       /* scramble-settle the revealed rows */
       Array.from(list.querySelectorAll('.date-date, .date-venue')).forEach(el => {
         const text = el.textContent;
-        scrambleThenSettleAt(text, t => { el.textContent = t; }, 300);
+        scrambleThenSettleAt(text, t => { el.textContent = t; }, 300, accordionScrambleLimit(text));
       });
     }
   });
@@ -949,7 +987,7 @@ document.querySelectorAll('.past-shows-list .date-date, .past-shows-list .date-v
 document.addEventListener('click', e => {
   const openGroup = pastShowsSection.querySelector('.past-shows-year.open');
   if (!openGroup || pastShowsSection.contains(e.target)) return;
-  resetPastShowsAccordion();
+  resetPastShowsAccordion(false);
 });
 
 /* cursor hover for new interactive elements */
