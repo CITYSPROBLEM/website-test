@@ -719,9 +719,31 @@ infoSection.querySelectorAll('.info-block-header').forEach(header => {
       /* scramble-settle the revealed text */
       const textEls  = Array.from(content.querySelectorAll('.bio-text, .bio-press-links a, .label-btn'));
       const textOrig = textEls.map(el => el.textContent);
+      const lockWidthEls = window.innerWidth <= 768
+        ? textEls.filter(el => el.matches('.bio-press-links a, .label-btn'))
+        : [];
+      lockWidthEls.forEach(el => {
+        const w = Math.ceil(el.getBoundingClientRect().width);
+        el.style.minWidth = `${w}px`;
+        el.style.whiteSpace = 'nowrap';
+      });
       const loops    = textEls.map((el, i) => scrambleLoop(textOrig[i], t => { el.textContent = t; }, 30, accordionScrambleLimit(textOrig[i])));
       loops.forEach(c => c());
-      textEls.forEach((el, i) => scrambleResolve(textOrig[i], t => { el.textContent = t; }, 16, 20, null, accordionScrambleLimit(textOrig[i])));
+      let remainingSettle = textEls.length;
+      textEls.forEach((el, i) => scrambleResolve(
+        textOrig[i],
+        t => { el.textContent = t; },
+        16,
+        20,
+        () => {
+          if (--remainingSettle !== 0) return;
+          lockWidthEls.forEach(locked => {
+            locked.style.minWidth = '';
+            locked.style.whiteSpace = '';
+          });
+        },
+        accordionScrambleLimit(textOrig[i])
+      ));
     }
   });
 });
