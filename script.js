@@ -885,7 +885,7 @@ initSectionReveal('pastShowsSection', '.section-label');
 
 /* hover-scramble for new static text elements */
 document.querySelectorAll(
-  '.featured-title, .featured-meta, .featured-link, .release-card-title, .release-card-meta, .dates-empty, .date-date, .date-venue'
+  '.featured-title, .featured-meta, .featured-link, .release-card-title, .release-card-meta, .dates-empty, #datesSection .date-date, #datesSection .date-venue'
 ).forEach(addScrambleHover);
 document.querySelectorAll('.section-label').forEach(addScrambleHover);
 
