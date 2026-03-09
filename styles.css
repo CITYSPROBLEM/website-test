@@ -263,6 +263,7 @@ main::after {
   transition: max-height .4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .info-block-content > * { padding-bottom: 1.5rem; }
+.connect-block .info-block-content { padding-bottom: .9rem; }
 
 /* aurora */
 .aurora {
