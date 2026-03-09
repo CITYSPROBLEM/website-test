@@ -472,107 +472,6 @@ window.addEventListener('resize', () => {
   };
 }
 
-/* noise + parallax dust */
-{
-  const dustCanvas = document.getElementById('dustLayer');
-  const dustCtx = dustCanvas ? dustCanvas.getContext('2d') : null;
-  let dustW = 0, dustH = 0;
-  let dustOffsetX = 0, dustOffsetY = 0;
-  let dustTargetX = 0, dustTargetY = 0;
-  let dustTick = 0;
-  let dustPoints = [];
-
-  function makeDustPoints() {
-    if (!dustCanvas) return;
-    const count = window.innerWidth <= 768 ? 56 : 120;
-    dustPoints = Array.from({ length: count }, () => ({
-      x: Math.random() * dustW,
-      y: Math.random() * dustH,
-      vx: (Math.random() - 0.5) * 0.16,
-      vy: (Math.random() - 0.5) * 0.16,
-      len: 1.8 + Math.random() * 4.4,
-      width: 0.35 + Math.random() * 0.95,
-      angle: Math.random() * Math.PI * 2,
-      wobble: 0.2 + Math.random() * 0.5,
-      spin: 0.55 + Math.random() * 1.1,
-      split: 0.5 + Math.random() * 1.2,
-      twinkle: 0.25 + Math.random() * 0.75,
-      phase: Math.random() * Math.PI * 2,
-      depth: 0.22 + Math.random() * 0.78
-    }));
-  }
-
-  function resizeDust() {
-    if (!dustCanvas || !dustCtx) return;
-    const dpr = window.devicePixelRatio || 1;
-    dustW = window.innerWidth;
-    dustH = window.innerHeight;
-    dustCanvas.width = Math.floor(dustW * dpr);
-    dustCanvas.height = Math.floor(dustH * dpr);
-    dustCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    makeDustPoints();
-  }
-
-  if (dustCanvas && dustCtx) {
-    resizeDust();
-    window.addEventListener('resize', resizeDust, { passive: true });
-    document.addEventListener('mousemove', e => {
-      const nx = (e.clientX / window.innerWidth) - 0.5;
-      const ny = (e.clientY / window.innerHeight) - 0.5;
-      dustTargetX = nx * 34;
-      dustTargetY = ny * 28;
-    }, { passive: true });
-  }
-
-  window.drawDust = function() {
-    if (!dustCanvas || !dustCtx || !dustPoints.length) return;
-    dustCtx.clearRect(0, 0, dustW, dustH);
-    dustOffsetX += (dustTargetX - dustOffsetX) * 0.05;
-    dustOffsetY += (dustTargetY - dustOffsetY) * 0.05;
-    dustTick += 0.012;
-
-    for (const p of dustPoints) {
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < -20) p.x = dustW + 20;
-      if (p.x > dustW + 20) p.x = -20;
-      if (p.y < -20) p.y = dustH + 20;
-      if (p.y > dustH + 20) p.y = -20;
-
-      const alpha = (0.16 + 0.3 * p.twinkle) * (0.5 + 0.5 * Math.sin(dustTick * (1 + p.twinkle) + p.phase));
-      const dx = p.x + dustOffsetX * p.depth;
-      const dy = p.y + dustOffsetY * p.depth;
-      const a = p.angle + Math.sin(dustTick * p.spin + p.phase) * (p.wobble * 1.4) + (Math.random() - 0.5) * 0.18;
-      const ux = Math.cos(a);
-      const uy = Math.sin(a);
-      const half = p.len * 0.5;
-      const x1 = dx - ux * half;
-      const y1 = dy - uy * half;
-      const x2 = dx + ux * half;
-      const y2 = dy + uy * half;
-      const strokeAlpha = Math.max(0.05, alpha).toFixed(3);
-
-      dustCtx.strokeStyle = `rgba(216, 224, 230, ${strokeAlpha})`;
-      dustCtx.lineWidth = p.width;
-      dustCtx.lineCap = 'round';
-      dustCtx.beginPath();
-      dustCtx.moveTo(x1, y1);
-      dustCtx.lineTo(x2, y2);
-      dustCtx.stroke();
-
-      /* faint sister stroke to create clustered "tuft" texture */
-      const px = -uy * p.split;
-      const py = ux * p.split;
-      dustCtx.strokeStyle = `rgba(196, 204, 212, ${Math.max(0.03, alpha * 0.52).toFixed(3)})`;
-      dustCtx.lineWidth = Math.max(0.3, p.width * 0.72);
-      dustCtx.beginPath();
-      dustCtx.moveTo(x1 + px, y1 + py);
-      dustCtx.lineTo(x2 + px * 0.7, y2 + py * 0.7);
-      dustCtx.stroke();
-    }
-  };
-}
-
 /* hide scroll arrow once user has scrolled past the hero */
 window.addEventListener('scroll', () => {
   scrollArrowEl.style.transition = 'opacity .4s ease';
@@ -1104,6 +1003,5 @@ const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matche
       turbEl.setAttribute('seed', (noiseSeed = (noiseSeed + 1) % 200));
     window.drawVisualizer();
   }
-  window.drawDust();
   requestAnimationFrame(tick);
 })();
