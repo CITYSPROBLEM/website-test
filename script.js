@@ -210,6 +210,236 @@ function positionScrollArrow() {
 document.fonts.ready.then(positionScrollArrow);
 window.addEventListener('resize', positionScrollArrow);
 
+/* ── audio player — tracks sourced from SONGS/tracks.js ─────────── */
+const audio       = document.getElementById('audio');
+const playerTrack       = document.getElementById('playerTrack');
+const playerTimeCurrent = document.getElementById('playerTimeCurrent');
+const playerTimeTotal   = document.getElementById('playerTimeTotal');
+const playerFill  = document.getElementById('playerFill');
+const playerProg  = document.getElementById('playerProgress');
+const btnPlay     = document.getElementById('btnPlay');
+const btnPrev     = document.getElementById('btnPrev');
+const btnNext     = document.getElementById('btnNext');
+const btnShuffle  = document.getElementById('btnShuffle');
+const playerCounter = document.getElementById('playerCounter');
+
+const tracks = (window.TRACKS || []).map(t => ({
+  title: t.title.toUpperCase(),
+  url: 'SONGS/' + t.file,
+}));
+let trackIdx = 0;
+let shuffleOn = false;
+
+function fmt(t) {
+  return `${Math.floor(t/60)}:${Math.floor(t%60).toString().padStart(2,'0')}`;
+}
+
+function updateMarquee() {
+  const clip = playerTrack.parentElement;
+  const overflow = playerTrack.scrollWidth - clip.clientWidth;
+  if (overflow > 2) {
+    playerTrack.style.setProperty('--scroll-dist', `-${overflow}px`);
+    playerTrack.classList.add('scrolling');
+  } else {
+    playerTrack.classList.remove('scrolling');
+  }
+}
+
+function loadTrack(idx) {
+  if (!tracks.length) return;
+  trackIdx = ((idx % tracks.length) + tracks.length) % tracks.length;
+  audio.src = tracks[trackIdx].url;
+  const title = tracks[trackIdx].title;
+  playerTrack.classList.remove('scrolling');
+  scrambleResolve(title, t => { playerTrack.textContent = t; }, 16, 25, () => {
+    updateMarquee();
+  });
+  playerCounter.textContent = `${trackIdx + 1} / ${tracks.length}`;
+  if (!audio.paused) audio.play();
+}
+
+function setPlaying(v) {
+  btnPlay.textContent = v ? '' : '▶\uFE0E';
+  btnPlay.classList.toggle('playing', v);
+}
+
+if (tracks.length) loadTrack(0);
+else playerTrack.textContent = '—';
+
+btnPlay.addEventListener('click', () => {
+  if (!tracks.length) return;
+  audio.paused ? audio.play() : audio.pause();
+});
+btnPrev.addEventListener('click', () => loadTrack(trackIdx - 1));
+btnNext.addEventListener('click', () => {
+  if (shuffleOn) {
+    let r; do { r = Math.floor(Math.random() * tracks.length); } while (r === trackIdx && tracks.length > 1);
+    loadTrack(r);
+  } else {
+    loadTrack(trackIdx + 1);
+  }
+});
+btnShuffle.addEventListener('click', () => {
+  shuffleOn = !shuffleOn;
+  btnShuffle.classList.toggle('active', shuffleOn);
+});
+audio.addEventListener('play',  () => setPlaying(true));
+audio.addEventListener('pause', () => setPlaying(false));
+audio.addEventListener('ended', () => {
+  if (shuffleOn) {
+    let r; do { r = Math.floor(Math.random() * tracks.length); } while (r === trackIdx && tracks.length > 1);
+    loadTrack(r);
+    audio.play();
+  } else if (trackIdx < tracks.length - 1) {
+    loadTrack(trackIdx + 1);
+  } else {
+    setPlaying(false);
+  }
+});
+audio.addEventListener('timeupdate', () => {
+  if (!audio.duration) return;
+  playerFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
+  playerTimeCurrent.textContent = fmt(audio.currentTime);
+  playerTimeTotal.textContent   = fmt(audio.duration);
+});
+function seekTo(clientX) {
+  if (!audio.duration) return;
+  const r = playerProg.getBoundingClientRect();
+  const pct = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+  audio.currentTime = pct * audio.duration;
+  playerFill.style.width = (pct * 100) + '%';
+}
+let isSeeking = false;
+let wasPlaying = false;
+playerProg.addEventListener('mousedown', e => {
+  isSeeking = true;
+  wasPlaying = !audio.paused;
+  audio.pause();
+  seekTo(e.clientX);
+});
+playerProg.addEventListener('touchstart', e => {
+  isSeeking = true;
+  wasPlaying = !audio.paused;
+  audio.pause();
+  seekTo(e.touches[0].clientX);
+}, { passive: true });
+window.addEventListener('mousemove', e => { if (isSeeking) seekTo(e.clientX); });
+window.addEventListener('touchmove', e => { if (isSeeking) { e.preventDefault(); seekTo(e.touches[0].clientX); } }, { passive: false });
+window.addEventListener('mouseup',  () => { if (isSeeking) { isSeeking = false; if (wasPlaying) audio.play(); } });
+window.addEventListener('touchend', () => { if (isSeeking) { isSeeking = false; if (wasPlaying) audio.play(); } });
+
+/* volume slider */
+const volSlider = document.getElementById('volSlider');
+function updateVolTrack() {
+  const pct = volSlider.value * 100;
+  volSlider.style.background = `linear-gradient(90deg, var(--ice) ${pct}%, rgba(0,212,255,.15) ${pct}%)`;
+}
+volSlider.addEventListener('input', () => {
+  audio.volume = volSlider.value;
+  updateVolTrack();
+});
+updateVolTrack();
+
+/* sync player width to h1 */
+function syncPlayerWidth() {
+  const w = window.innerWidth <= 768
+    ? playerEl.offsetWidth
+    : h1El.offsetWidth;
+  playerEl.style.setProperty('--player-content-w', w + 'px');
+  document.documentElement.style.setProperty('--player-h', playerEl.offsetHeight + 'px');
+}
+document.fonts.ready.then(syncPlayerWidth);
+let resizePlayerTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizePlayerTimer);
+  resizePlayerTimer = setTimeout(syncPlayerWidth, 100);
+});
+
+/* cursor hover for player controls */
+[btnPlay, btnPrev, btnNext, btnShuffle, playerProg, volSlider].forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('link-hover'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('link-hover'));
+});
+
+/* hover-scramble for player track name */
+{
+  let cancelTrackScramble = null, cancelTrackResolve = null;
+  playerTrack.addEventListener('mouseenter', () => {
+    const current = playerTrack.textContent;
+    cancelTrackResolve?.(); cancelTrackResolve = null;
+    cancelTrackScramble?.();
+    cancelTrackScramble = scrambleLoop(current, t => { playerTrack.textContent = t; }, 30);
+  });
+  playerTrack.addEventListener('mouseleave', () => {
+    const current = tracks.length ? tracks[trackIdx].title : '—';
+    cancelTrackScramble?.(); cancelTrackScramble = null;
+    cancelTrackResolve = scrambleResolve(current, t => { playerTrack.textContent = t; }, ...settleParams(current), () => {
+      updateMarquee();
+    });
+  });
+}
+
+/* tap-to-play hint on mobile */
+{
+  const tapHint = document.getElementById('tapHint');
+  const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  if (isTouchDevice && tracks.length) {
+    function showTapHint() {
+      const r = btnPlay.getBoundingClientRect();
+      tapHint.style.left = (r.left + r.width / 2) + 'px';
+      tapHint.style.top  = (r.top  + r.height / 2) + 'px';
+      tapHint.classList.add('show');
+    }
+    setTimeout(showTapHint, 1200);
+    audio.addEventListener('play', () => { tapHint.classList.remove('show'); }, { once: true });
+  }
+}
+
+/* audio visualizer */
+{
+  const vizCanvas = document.getElementById('visualizer');
+  const vizCtx = vizCanvas.getContext('2d');
+  let analyser = null, dataArray = null, audioCtxStarted = false;
+
+  function initAudioContext() {
+    if (audioCtxStarted) return;
+    audioCtxStarted = true;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaElementSource(audio);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+  }
+
+  audio.addEventListener('play', initAudioContext, { once: true });
+
+  function resizeViz() {
+    const dpr = window.devicePixelRatio || 1;
+    vizCanvas.width  = vizCanvas.clientWidth  * dpr;
+    vizCanvas.height = vizCanvas.clientHeight * dpr;
+    vizCtx.scale(dpr, dpr);
+  }
+  resizeViz();
+  window.addEventListener('resize', resizeViz);
+
+  window.drawVisualizer = function() {
+    const W = vizCanvas.clientWidth, H = vizCanvas.clientHeight;
+    vizCtx.clearRect(0, 0, W, H);
+    if (!analyser || audio.paused) return;
+    analyser.getByteFrequencyData(dataArray);
+    const bars = dataArray.length;
+    const barW = W / bars;
+    for (let i = 0; i < bars; i++) {
+      const v = dataArray[i] / 255;
+      const h = v * H;
+      vizCtx.fillStyle = `rgba(0,212,255,${0.15 + v * 0.35})`;
+      vizCtx.fillRect(i * barW, H - h, barW - 1, h);
+    }
+  };
+}
+
 /* topbar menu */
 const menuBtn        = document.getElementById('menuBtn');
 const menuDropdown   = document.getElementById('menuDropdown');

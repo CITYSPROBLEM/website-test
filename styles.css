@@ -277,7 +277,7 @@ main {
   display: flex; flex-direction: column;
   justify-content: center; align-items: center;
   width: 100%; position: relative;
-  padding-bottom: 166px;
+  padding-bottom: var(--player-h, 56px);
 }
 .info-section {
   display: block;
@@ -463,26 +463,120 @@ a:hover .arr { transform: translateX(3px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* soundcloud player */
-.sc-player {
+/* player */
+.player {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   width: 100%;
-  z-index: 100;
-  background: rgba(4,6,15,.85);
+  display: flex; flex-direction: column; align-items: stretch;
+  padding: .85rem 2rem;
+  background: rgba(4,6,15,.25);
   border-top: 1px solid rgba(0,212,255,.18);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  z-index: 100;
   opacity: 0;
   animation: fadeUp .9s .7s ease forwards;
 }
-.sc-player iframe {
-  display: block;
-  width: 100%;
-  height: 166px;
-  border: none;
-  filter: brightness(.85) contrast(1.1);
+.player-inner {
+  width: var(--player-content-w, 400px);
+  margin: 0 auto;
+  display: flex; flex-direction: row; align-items: center; gap: .65rem;
 }
+.player-track-clip {
+  overflow: hidden;
+  max-width: 14rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.player-track-name {
+  display: inline-block;
+  font-size: clamp(.5rem, 1.4vw, .65rem); letter-spacing: .2em; color: var(--ice);
+  text-transform: uppercase; white-space: nowrap;
+}
+.player-track-name.scrolling {
+  animation: trackScroll 11s ease-in-out infinite;
+}
+@keyframes trackScroll {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(0); }
+  65%  { transform: translateX(var(--scroll-dist, 0px)); }
+  85%  { transform: translateX(var(--scroll-dist, 0px)); }
+  100% { transform: translateX(0); }
+}
+.player-time-disp {
+  font-size: clamp(.45rem, 1.2vw, .55rem); letter-spacing: .1em; color: rgba(200,230,255,.4);
+  flex-shrink: 0; user-select: none;
+}
+.player-progress {
+  flex: 1; height: 5px;
+  background: rgba(0,212,255,.15);
+  cursor: none;
+}
+.player-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--ice), var(--ice-b));
+  box-shadow: 0 0 6px rgba(0,212,255,.5);
+}
+.player-controls {
+  display: flex; align-items: center;
+  flex-shrink: 0;
+}
+.player-btn {
+  background: none; border: none;
+  font-family: 'Michroma', sans-serif;
+  font-size: clamp(.65rem, 1.8vw, .85rem); letter-spacing: 0;
+  color: rgba(200,230,255,.5);
+  display: inline-flex; align-items: center; justify-content: center;
+  line-height: 1; padding: 0 .6rem;
+  cursor: none; transition: color .2s; user-select: none;
+  -webkit-appearance: none; appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.player-btn:hover { color: var(--ice); }
+.player-btn-play { color: var(--text); font-size: clamp(1rem, 2.8vw, 1.4rem); width: 2.2rem; height: 1.6rem; position: relative; }
+.player-btn-play.playing { color: transparent; text-shadow: none; }
+.player-btn-play.playing::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 12px; height: 13px;
+  background: linear-gradient(to right,
+    var(--ice) 0, var(--ice) 4px,
+    transparent 4px, transparent 8px,
+    var(--ice) 8px, var(--ice) 12px
+  );
+  box-shadow: 0 0 8px rgba(0,212,255,.6);
+}
+.player-volume-row {
+  display: flex; align-items: center; gap: .4rem;
+  flex-shrink: 0;
+}
+.player-vol-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 70px; height: 2px;
+  background: rgba(0,212,255,.15);
+  outline: none; border: none; cursor: none;
+}
+.player-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--ice);
+  box-shadow: 0 0 6px rgba(0,212,255,.7);
+  cursor: none;
+  margin-top: -3px;
+}
+.player-vol-slider::-moz-range-thumb {
+  width: 8px; height: 8px;
+  border-radius: 50%; border: none;
+  background: var(--ice);
+  box-shadow: 0 0 6px rgba(0,212,255,.7);
+  cursor: none;
+}
+.player-vol-slider::-webkit-slider-runnable-track { height: 2px; }
+.player-vol-slider::-moz-range-track { height: 2px; background: rgba(0,212,255,.15); }
 
 /* hide custom cursor only on real touch devices, not just narrow windows */
 @media (hover: none) and (pointer: coarse) {
@@ -491,7 +585,10 @@ a:hover .arr { transform: translateX(3px); }
   body { cursor: auto; }
   #cur, #cur-ring { display: none; }
   a { cursor: auto; }
-  .sc-player iframe { cursor: auto; }
+  .player-btn-shuffle, .player-btn, .player-progress,
+  .player-vol-slider,
+  .player-vol-slider::-webkit-slider-thumb,
+  .player-vol-slider::-moz-range-thumb { cursor: auto; }
 
   /* ── mobile performance: remove expensive GPU effects ── */
 
@@ -500,9 +597,9 @@ a:hover .arr { transform: translateX(3px); }
     backdrop-filter: none; -webkit-backdrop-filter: none;
     background: rgba(3,10,20,.95);
   }
-  .sc-player {
+  .player {
     backdrop-filter: none; -webkit-backdrop-filter: none;
-    background: rgba(3,10,20,.98);
+    background: rgba(3,10,20,.95);
   }
   .bio-panel {
     backdrop-filter: none; -webkit-backdrop-filter: none;
@@ -564,8 +661,24 @@ a:hover .arr { transform: translateX(3px); }
 
   .aurora { width: 100vw; height: 180px; }
 
-  /* soundcloud player — compact on mobile */
-  .sc-player iframe { height: 120px; }
+  /* player — full width, compact */
+  .player { padding: .6rem 1.25rem; }
+  .player-inner { width: 100%; }
+  .player-volume-row { display: none; }
+  .player-counter { display: none; }
+  .player-track-clip { max-width: 40vw; }
+  .player-track-name {
+    font-size: .55rem;
+    text-align: left;
+  }
+  .player-time-disp { font-size: .45rem; }
+  #playerTimeTotal { display: none; }
+  .player-progress {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    width: 100%; height: 3px;
+    flex: none;
+  }
 }
 
 /* ── scroll arrow ─────────────────────────────────── */
@@ -768,7 +881,7 @@ a:hover .arr { transform: translateX(3px); }
 /* ── audio visualizer ────────────────────────────── */
 .visualizer {
   position: fixed;
-  bottom: 166px;
+  bottom: var(--player-h, 56px);
   left: 0; width: 100%; height: 60px;
   z-index: 99;
   pointer-events: none;
