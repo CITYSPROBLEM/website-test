@@ -539,6 +539,10 @@ function recalcTopbarScrollRange() {
 }
 
 function topbarTargetFromScroll() {
+  const h1Rect = h1El.getBoundingClientRect();
+  /* hard guard for fast flicks: if title is off-screen, bar must be fully hidden */
+  if (h1Rect.bottom <= 8) return 1;
+
   const range = Math.max(1, topbarPushEndScroll - topbarPushStartScroll);
   const raw = (window.scrollY - topbarPushStartScroll) / range;
   const clamped = Math.max(0, Math.min(1, raw));
