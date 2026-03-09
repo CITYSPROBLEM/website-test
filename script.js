@@ -524,20 +524,20 @@ window.addEventListener('scroll', () => {
   scrollArrowEl.style.opacity = hidden ? '0' : '';
 }, { passive: true });
 
-function topbarTargetProgressFromHero() {
+function topbarTargetFromHero() {
   const barH = topbarEl.offsetHeight || 72;
   const h1Rect = h1El.getBoundingClientRect();
   const pushStartY = barH + 36;          /* title reaches this line -> starts pushing bar */
   const pushEndY = -h1Rect.height * 0.4; /* title above this point -> bar fully off-screen */
   const travel = Math.max(1, pushStartY - pushEndY);
   const pushDistance = pushStartY - h1Rect.top;
-  /* dead-zone near contact to avoid micro jitter around the push threshold */
-  const deadZone = 10;
-  const effectiveDistance = pushDistance <= deadZone ? 0 : pushDistance - deadZone;
-  const raw = effectiveDistance / travel;
+  const raw = pushDistance / travel;
   const clamped = Math.max(0, Math.min(1, raw));
   /* smoothstep for a natural push/pull curve */
-  return clamped * clamped * (3 - 2 * clamped);
+  return {
+    progress: clamped * clamped * (3 - 2 * clamped),
+    contactDelta: Math.abs(pushDistance)
+  };
 }
 
 function applyTopbarProgress(hideProgress) {
@@ -552,9 +552,16 @@ let topbarRafPending = false;
 let topbarMotionRaf = 0;
 let topbarProgress = 0;
 let topbarTargetProgress = 0;
+let topbarCoupled = false;
 
 function animateTopbarProgress() {
   const delta = topbarTargetProgress - topbarProgress;
+  if (topbarCoupled) {
+    topbarProgress = topbarTargetProgress;
+    applyTopbarProgress(topbarProgress);
+    topbarMotionRaf = 0;
+    return;
+  }
   if (Math.abs(delta) < 0.002) {
     topbarProgress = topbarTargetProgress;
     applyTopbarProgress(topbarProgress);
@@ -571,18 +578,21 @@ function scheduleTopbarPositionUpdate() {
   topbarRafPending = true;
   requestAnimationFrame(() => {
     topbarRafPending = false;
-    topbarTargetProgress = topbarTargetProgressFromHero();
+    const target = topbarTargetFromHero();
+    topbarTargetProgress = target.progress;
+    /* once topbar and title get near each other, move as one unit (no lag) */
+    topbarCoupled = target.contactDelta < 110;
     if (!topbarMotionRaf) topbarMotionRaf = requestAnimationFrame(animateTopbarProgress);
   });
 }
 window.addEventListener('scroll', scheduleTopbarPositionUpdate, { passive: true });
 window.addEventListener('resize', scheduleTopbarPositionUpdate, { passive: true });
 document.fonts.ready.then(() => {
-  topbarTargetProgress = topbarTargetProgressFromHero();
+  topbarTargetProgress = topbarTargetFromHero().progress;
   topbarProgress = topbarTargetProgress;
   applyTopbarProgress(topbarProgress);
 });
-topbarTargetProgress = topbarTargetProgressFromHero();
+topbarTargetProgress = topbarTargetFromHero().progress;
 topbarProgress = topbarTargetProgress;
 applyTopbarProgress(topbarProgress);
 
