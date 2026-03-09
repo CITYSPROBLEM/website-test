@@ -994,6 +994,12 @@ window.addEventListener('scroll', () => {
 
 /* info section scramble — apply hover-scramble after DOM ready */
 const infoSection = document.getElementById('infoSection');
+const MAIN_BLOCK_SELECTOR   = '.info-block:not(.connect-block)';
+const MAIN_HEADER_SELECTOR  = `${MAIN_BLOCK_SELECTOR} .info-block-header`;
+const MAIN_OPEN_SELECTOR    = `${MAIN_BLOCK_SELECTOR}.open`;
+function getMainHeaders() { return Array.from(infoSection.querySelectorAll(MAIN_HEADER_SELECTOR)); }
+function getMainOpenBlocks() { return Array.from(infoSection.querySelectorAll(MAIN_OPEN_SELECTOR)); }
+function getMainOpenBlock() { return infoSection.querySelector(MAIN_OPEN_SELECTOR); }
 
 /* reveal info section once it scrolls into view */
 {
@@ -1068,7 +1074,7 @@ function initLayout() {
   narrowW = Math.max(280, maxLabelW + hPad + 40); /* +40 for toggle icon */
 
   /* set correct width for current state — no transition yet */
-  const isExpanded = !!infoSection.querySelector('.info-block.open');
+  const isExpanded = !!getMainOpenBlock();
   infoSection.style.width = (isExpanded ? expandedW : narrowW) + 'px';
   infoSection.offsetWidth;
 
@@ -1081,7 +1087,7 @@ window.addEventListener('resize', initLayout, { passive: true });
 
 /* hide all blocks except the given one with a smooth height+opacity collapse */
 function hideOtherBlocks(openBlock) {
-  Array.from(infoSection.querySelectorAll('.info-block'))
+  Array.from(infoSection.querySelectorAll(MAIN_BLOCK_SELECTOR))
     .filter(b => b !== openBlock)
     .forEach(b => {
       const h = b.offsetHeight;
@@ -1099,7 +1105,7 @@ function hideOtherBlocks(openBlock) {
 
 /* reveal all hidden blocks back to their header height */
 function showAllBlocks() {
-  Array.from(infoSection.querySelectorAll('.info-block')).forEach(b => {
+  Array.from(infoSection.querySelectorAll(MAIN_BLOCK_SELECTOR)).forEach(b => {
     if (!b.style.maxHeight || b.style.maxHeight === '') return; /* already visible */
     const targetH = b.querySelector('.info-block-header').offsetHeight;
     b.style.transition = 'max-height .35s ease, opacity .25s ease';
@@ -1141,13 +1147,13 @@ function infoScrollCenter(finalH) {
 }
 
 /* accordion */
-infoSection.querySelectorAll('.info-block-header').forEach(header => {
+infoSection.querySelectorAll(MAIN_HEADER_SELECTOR).forEach(header => {
   header.addEventListener('click', () => {
     const block  = header.closest('.info-block');
     const isOpen = block.classList.contains('open');
 
     /* close any open block */
-    infoSection.querySelectorAll('.info-block.open').forEach(b => {
+    getMainOpenBlocks().forEach(b => {
       b.classList.remove('open');
       b.querySelector('.info-block-content').style.maxHeight = '0px';
       resetLabelGroups(b);
@@ -1155,7 +1161,7 @@ infoSection.querySelectorAll('.info-block-header').forEach(header => {
 
     if (isOpen) {
       /* closing — compute final height, apply changes, then read fresh scrollY for centering */
-      const allHeaders = Array.from(infoSection.querySelectorAll('.info-block-header'));
+      const allHeaders = getMainHeaders();
       const finalH = allHeaders.reduce((s, h) => s + h.offsetHeight, 0);
 
       showAllBlocks();
@@ -1287,10 +1293,10 @@ infoSection.querySelectorAll('.label-group').forEach(group => {
 /* click outside info section to collapse open accordion */
 document.addEventListener('click', e => {
   if (menuExpanded) return;
-  const openBlock = infoSection.querySelector('.info-block.open');
+  const openBlock = getMainOpenBlock();
   if (!openBlock || infoSection.contains(e.target)) return;
 
-  const allHeaders = Array.from(infoSection.querySelectorAll('.info-block-header'));
+  const allHeaders = getMainHeaders();
   const finalH  = allHeaders.reduce((s, h) => s + h.offsetHeight, 0);
   const targetY = infoScrollCenter(finalH);
 
