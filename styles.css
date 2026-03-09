@@ -973,7 +973,9 @@ a:hover .arr { transform: translateX(3px); }
 
 /* ── ticker / marquee ────────────────────────────── */
 .ticker {
-  width: 100%;
+  width: calc(100vw);
+  max-width: 100vw;
+  margin-left: calc(-0.5 * (100vw - 100%));
   overflow: hidden;
   padding: 1.4rem 0;
   border-top: 1px solid rgba(0,212,255,.14);
