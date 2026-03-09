@@ -198,6 +198,7 @@ document.querySelectorAll('nav a').forEach(a => {
 /* scroll arrow positioning */
 const playerEl      = document.getElementById('player');
 const scrollArrowEl = document.querySelector('.scroll-arrow');
+const topbarEl = document.querySelector('.topbar');
 function positionScrollArrow() {
   const h1Bottom  = h1El.getBoundingClientRect().bottom;
   const playerTop = playerEl.getBoundingClientRect().top;
@@ -574,29 +575,56 @@ function showAllBlocks() {
   });
 }
 
-/* animate scroll to targetY over duration ms using the same easing as the CSS transitions */
-function animateScrollTo(targetY, duration) {
-  const startY = window.scrollY;
-  const dist   = Math.max(0, targetY) - startY;
-  if (Math.abs(dist) < 1) return;
-  const t0 = performance.now();
-  /* ease-in-out — matches cubic-bezier(0.4, 0, 0.2, 1) closely */
-  function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
-  (function frame(now) {
-    const t = Math.min((now - t0) / duration, 1);
-    window.scrollTo({ top: startY + dist * ease(t), behavior: 'instant' });
-    if (t < 1) requestAnimationFrame(frame);
-  })(t0);
+function centerBandY() {
+  const topEdge = topbarEl ? topbarEl.getBoundingClientRect().bottom : 0;
+  const bottomEdge = playerEl ? playerEl.getBoundingClientRect().top : window.innerHeight;
+  return topEdge + (bottomEdge - topEdge) / 2;
 }
 
-/* return the vertical scroll position that centers the info section at a given height */
-function infoScrollCenter(finalH) {
-  const cs  = getComputedStyle(infoSection);
-  const pad = parseFloat(cs.paddingTop)    + parseFloat(cs.paddingBottom)
-            + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
-  const totalH = finalH + pad;
-  return Math.max(0, window.scrollY + infoSection.getBoundingClientRect().top
-                 - (window.innerHeight - totalH) / 2);
+function clampScrollY(targetY) {
+  const doc = document.documentElement;
+  const maxY = Math.max(0, doc.scrollHeight - window.innerHeight);
+  return Math.min(Math.max(0, targetY), maxY);
+}
+
+/* return the vertical scroll position that centers the current info section in the usable viewport */
+function currentInfoScrollCenter() {
+  const rect = infoSection.getBoundingClientRect();
+  const rectCenter = rect.top + rect.height / 2;
+  return clampScrollY(window.scrollY + rectCenter - centerBandY());
+}
+
+let cancelInfoCenterFollow = null;
+
+function followInfoSectionCenter(duration = 400) {
+  cancelInfoCenterFollow?.();
+
+  const startY = window.scrollY;
+  const startedAt = performance.now();
+  let rafId = 0;
+
+  function ease(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  function frame(now) {
+    const t = Math.min((now - startedAt) / duration, 1);
+    const targetY = currentInfoScrollCenter();
+    const nextY = startY + (targetY - startY) * ease(t);
+    window.scrollTo({ top: nextY, behavior: 'instant' });
+    if (t < 1) {
+      rafId = requestAnimationFrame(frame);
+    } else {
+      window.scrollTo({ top: currentInfoScrollCenter(), behavior: 'instant' });
+      cancelInfoCenterFollow = null;
+    }
+  }
+
+  rafId = requestAnimationFrame(frame);
+  cancelInfoCenterFollow = () => {
+    cancelAnimationFrame(rafId);
+    cancelInfoCenterFollow = null;
+  };
 }
 
 /* accordion */
@@ -613,26 +641,18 @@ infoSection.querySelectorAll('.info-block-header').forEach(header => {
     });
 
     if (isOpen) {
-      /* closing — compute final height, apply changes, then read fresh scrollY for centering */
-      const allHeaders = Array.from(infoSection.querySelectorAll('.info-block-header'));
-      const finalH = allHeaders.reduce((s, h) => s + h.offsetHeight, 0);
-
       showAllBlocks();
       if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
-      /* force reflow so scroll anchoring settles before we read scrollY */
       infoSection.offsetHeight;
-      animateScrollTo(infoScrollCenter(finalH), 400);
+      followInfoSectionCenter(400);
     } else {
-      /* opening — apply all changes first, then measure finalH at the expanded width */
       const content = block.querySelector('.info-block-content');
 
       hideOtherBlocks(block);
       if (window.innerWidth > 768) infoSection.style.width = expandedWidthForBlock(block) + 'px';
       block.classList.add('open');
-      /* reading scrollHeight here forces reflow at the new width — used for both maxHeight and finalH */
       content.style.maxHeight = content.scrollHeight + 'px';
-      const finalH = block.querySelector('.info-block-header').offsetHeight + parseFloat(content.style.maxHeight);
-      animateScrollTo(infoScrollCenter(finalH), 400);
+      followInfoSectionCenter(400);
 
       /* scramble-settle the revealed text */
       const textEls  = Array.from(content.querySelectorAll('.bio-text, .bio-press-links a, .label-btn'));
@@ -701,9 +721,7 @@ infoSection.querySelectorAll('.label-group').forEach(group => {
 
   btn.addEventListener('click', () => {
     const isOpen        = group.classList.contains('open');
-    const block         = group.closest('.info-block');
     const parentContent = group.closest('.info-block-content');
-    const headerH       = block.querySelector('.info-block-header').offsetHeight;
 
     if (isOpen) {
       /* close: restore all other groups and collapse songs */
@@ -711,9 +729,7 @@ infoSection.querySelectorAll('.label-group').forEach(group => {
       songs.style.maxHeight = '0';
       songs.style.opacity   = '0';
       showAllLabelGroups();
-      /* read final content height now (reflow reflects all changes) then center immediately */
-      const finalContentH = parentContent.scrollHeight;
-      animateScrollTo(infoScrollCenter(headerH + finalContentH), 400);
+      followInfoSectionCenter(400);
       /* parent max-height can only shrink after transitions finish (content is taller mid-transition) */
       setTimeout(() => {
         if (parentContent.style.maxHeight && parentContent.style.maxHeight !== '0px')
@@ -725,12 +741,10 @@ infoSection.querySelectorAll('.label-group').forEach(group => {
       songs.style.maxHeight = songs.scrollHeight + 'px';
       songs.style.opacity   = '1';
       hideLabelGroups(group);
-      /* read final content height now (reflow reflects all changes) then center immediately */
       const finalContentH = parentContent.scrollHeight;
-      /* safe to set parent max-height to exact final value — content never exceeds it mid-transition */
       if (parentContent.style.maxHeight && parentContent.style.maxHeight !== '0px')
         parentContent.style.maxHeight = finalContentH + 'px';
-      animateScrollTo(infoScrollCenter(headerH + finalContentH), 400);
+      followInfoSectionCenter(400);
       /* scramble-settle song links as they slide in */
       Array.from(songs.querySelectorAll('a')).forEach(a => {
         const text = a.textContent;
@@ -748,16 +762,12 @@ document.addEventListener('click', e => {
   const openBlock = infoSection.querySelector('.info-block.open');
   if (!openBlock || infoSection.contains(e.target)) return;
 
-  const allHeaders = Array.from(infoSection.querySelectorAll('.info-block-header'));
-  const finalH  = allHeaders.reduce((s, h) => s + h.offsetHeight, 0);
-  const targetY = infoScrollCenter(finalH);
-
   openBlock.classList.remove('open');
   openBlock.querySelector('.info-block-content').style.maxHeight = '0px';
   resetLabelGroups(openBlock);
   showAllBlocks();
   if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
-  animateScrollTo(targetY, 400);
+  followInfoSectionCenter(400);
 });
 
 /* apply hover-scramble to all remaining static text elements
