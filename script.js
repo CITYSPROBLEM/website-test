@@ -193,27 +193,49 @@ function h1Settle() {
   cancelH1 = settleIn(h1Orig, t => { h1El.textContent = t; applyH1Centering(); });
 }
 
-setTimeout(() => {
-  if (h1FadeUpDone) return;
-  cancelH1 = scrambleLoop(h1Orig, t => { h1El.textContent = t; });
-}, 200);
-h1El.addEventListener('animationend', e => {
-  if (e.animationName === 'fadeUp') h1Settle();
-  if (e.animationName === 'glowFadeIn') {
-    h1El.style.opacity = '1';
-    h1El.style.animation = 'glowPulse 4s ease-in-out infinite';
-  }
-});
+if (isCoarsePointer) {
+  /* deterministic mobile intro: short timed scramble burst, then hard settle */
+  let burstTicks = 0;
+  const burst = setInterval(() => {
+    if (h1FadeUpDone) { clearInterval(burst); return; }
+    h1El.textContent = h1Orig.split('').map(c => (c === ' ' ? ' ' : randGlyph(c))).join('');
+    applyH1Centering();
+    if (++burstTicks >= 14) clearInterval(burst);
+  }, 45);
+  h1SettleFallbackTimer = setTimeout(() => {
+    clearInterval(burst);
+    h1FinalizeImmediate();
+  }, 760);
+  h1SettleWatchdogTimer = setTimeout(() => {
+    clearInterval(burst);
+    h1FinalizeImmediate();
+  }, 1600);
+  window.addEventListener('pageshow', h1FinalizeImmediate, { once: true });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) h1FinalizeImmediate();
+  }, { once: true });
+} else {
+  setTimeout(() => {
+    if (h1FadeUpDone) return;
+    cancelH1 = scrambleLoop(h1Orig, t => { h1El.textContent = t; });
+  }, 200);
+  h1El.addEventListener('animationend', e => {
+    if (e.animationName === 'fadeUp') h1Settle();
+    if (e.animationName === 'glowFadeIn') {
+      h1El.style.opacity = '1';
+      h1El.style.animation = 'glowPulse 4s ease-in-out infinite';
+    }
+  });
 
-/* fallback: if page loaded in a background tab, fadeUp is suspended and
-   animationend never fires — settle once the tab becomes visible */
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) h1Settle();
-}, { once: true });
-window.addEventListener('pageshow', h1Settle, { once: true });
-/* mobile fallback: if animation callbacks are skipped, force settle */
-h1SettleFallbackTimer = setTimeout(h1Settle, 1600);
-h1SettleWatchdogTimer = setTimeout(h1FinalizeImmediate, 2600);
+  /* fallback: if page loaded in a background tab, fadeUp is suspended and
+     animationend never fires — settle once the tab becomes visible */
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) h1Settle();
+  }, { once: true });
+  window.addEventListener('pageshow', h1Settle, { once: true });
+  h1SettleFallbackTimer = setTimeout(h1Settle, 1600);
+  h1SettleWatchdogTimer = setTimeout(h1FinalizeImmediate, 2600);
+}
 function applyH1Centering() {
   const overflow = h1El.scrollWidth - h1El.clientWidth;
   h1El.style.transform = overflow > 0 ? `translateX(${-(overflow / 2)}px)` : '';
