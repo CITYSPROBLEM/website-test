@@ -534,7 +534,7 @@ function recalcTopbarScrollRange() {
   const h1H = Math.max(1, h1Rect.height || h1El.offsetHeight || 64);
 
   /* hardcoded scroll window: starts as title nears topbar, completes shortly after crossing */
-  topbarPushStartScroll = Math.max(0, h1TopDoc - (barH + 36));
+  topbarPushStartScroll = Math.max(0, h1TopDoc - (barH + 20));
   topbarPushEndScroll = topbarPushStartScroll + Math.max(92, h1H + barH * 0.65);
 }
 
