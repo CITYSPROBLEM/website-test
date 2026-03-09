@@ -484,13 +484,13 @@ window.addEventListener('resize', () => {
 
   function makeDustPoints() {
     if (!dustCanvas) return;
-    const count = window.innerWidth <= 768 ? 34 : 70;
+    const count = window.innerWidth <= 768 ? 56 : 120;
     dustPoints = Array.from({ length: count }, () => ({
       x: Math.random() * dustW,
       y: Math.random() * dustH,
-      vx: (Math.random() - 0.5) * 0.09,
-      vy: (Math.random() - 0.5) * 0.09,
-      r: 0.45 + Math.random() * 1.35,
+      vx: (Math.random() - 0.5) * 0.16,
+      vy: (Math.random() - 0.5) * 0.16,
+      r: 0.7 + Math.random() * 1.8,
       twinkle: 0.25 + Math.random() * 0.75,
       phase: Math.random() * Math.PI * 2,
       depth: 0.22 + Math.random() * 0.78
@@ -514,8 +514,8 @@ window.addEventListener('resize', () => {
     document.addEventListener('mousemove', e => {
       const nx = (e.clientX / window.innerWidth) - 0.5;
       const ny = (e.clientY / window.innerHeight) - 0.5;
-      dustTargetX = nx * 26;
-      dustTargetY = ny * 20;
+      dustTargetX = nx * 34;
+      dustTargetY = ny * 28;
     }, { passive: true });
   }
 
@@ -534,12 +534,12 @@ window.addEventListener('resize', () => {
       if (p.y < -10) p.y = dustH + 10;
       if (p.y > dustH + 10) p.y = -10;
 
-      const alpha = (0.1 + 0.28 * p.twinkle) * (0.55 + 0.45 * Math.sin(dustTick * (1.2 + p.twinkle) + p.phase));
+      const alpha = (0.2 + 0.42 * p.twinkle) * (0.55 + 0.45 * Math.sin(dustTick * (1.2 + p.twinkle) + p.phase));
       const dx = p.x + dustOffsetX * p.depth;
       const dy = p.y + dustOffsetY * p.depth;
 
       dustCtx.beginPath();
-      dustCtx.fillStyle = `rgba(182, 239, 255, ${Math.max(0.03, alpha).toFixed(3)})`;
+      dustCtx.fillStyle = `rgba(182, 239, 255, ${Math.max(0.08, alpha).toFixed(3)})`;
       dustCtx.arc(dx, dy, p.r, 0, Math.PI * 2);
       dustCtx.fill();
     }
@@ -1076,7 +1076,7 @@ const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matche
     if (++grainFrame % 6 === 0)
       turbEl.setAttribute('seed', (noiseSeed = (noiseSeed + 1) % 200));
     window.drawVisualizer();
-    window.drawDust();
   }
+  window.drawDust();
   requestAnimationFrame(tick);
 })();

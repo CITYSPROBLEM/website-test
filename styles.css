@@ -868,7 +868,7 @@ a:hover .arr { transform: translateX(3px); }
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  opacity: .42;
+  opacity: .68;
 }
 
 /* ── section label (reusable) ────────────────────── */
@@ -1382,7 +1382,7 @@ a:hover .arr { transform: translateX(3px); }
   .ticker { padding: .8rem 0; }
 
   .visualizer { height: 40px; }
-  .dust-layer { opacity: .28; }
+  .dust-layer { opacity: .42; }
 
   .section-label { font-size: .45rem; margin-bottom: 1.5rem; }
 
@@ -1397,7 +1397,7 @@ a:hover .arr { transform: translateX(3px); }
   .glitch-wrap::before,
   .glitch-wrap::after { display: none; }
   .visualizer { display: none; }
-  .dust-layer { display: none; }
+  .dust-layer { opacity: .3; }
   .featured-release::before,
   .releases-section::before { filter: none; }
 }
