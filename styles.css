@@ -653,11 +653,28 @@ a:hover .arr { transform: translateX(3px); }
   a:hover::before { animation: none; }
 
   /* info / bio type scale */
-  .bio-panel-title { font-size: .82rem; }
-  .bio-panel-label { font-size: .6rem; }
-  .bio-text { font-size: .7rem; line-height: 1.75; }
-  .bio-press-links a { font-size: .6rem; width: auto; padding: .45rem 1rem; }
-  .info-toggle { font-size: .9rem; }
+  .bio-panel-title { font-size: clamp(.82rem, 4.2vw, 1rem); }
+  .bio-panel-label {
+    font-size: clamp(.58rem, 2.8vw, .7rem);
+    letter-spacing: .18em;
+    white-space: normal;
+    line-height: 1.5;
+  }
+  .bio-text {
+    font-size: clamp(.64rem, 2.8vw, .76rem);
+    line-height: 1.85;
+    letter-spacing: .04em;
+  }
+  .bio-press-links a {
+    font-size: clamp(.58rem, 2.7vw, .68rem);
+    width: 100%;
+    max-width: 100%;
+    padding: .5rem .95rem;
+  }
+  .info-toggle {
+    font-size: clamp(.9rem, 4vw, 1.05rem);
+    right: -1rem;
+  }
 
   .aurora { width: 100vw; height: 180px; }
 
@@ -762,6 +779,7 @@ a:hover .arr { transform: translateX(3px); }
   font-family: 'Michroma', sans-serif;
   font-size: clamp(.82rem, 2.2vw, 1.1rem); line-height: 1.9;
   letter-spacing: .05em; color: rgba(220,240,255,.88);
+  overflow-wrap: anywhere;
 }
 .bio-press-links { display: flex; flex-direction: column; gap: .65rem; align-items: flex-start; }
 .bio-press-links a::before {
@@ -771,6 +789,9 @@ a:hover .arr { transform: translateX(3px); }
   width: auto; padding: .5rem 1.4rem;
   font-size: clamp(.72rem, 1.9vw, .9rem); letter-spacing: .13em;
   justify-content: flex-start;
+  white-space: normal;
+  line-height: 1.6;
+  text-align: left;
 }
 .info-section .bio-press-links a {
   justify-content: flex-start;
@@ -810,6 +831,7 @@ a:hover .arr { transform: translateX(3px); }
   background-repeat: no-repeat;
   transition: color .25s;
   text-align: left;
+  line-height: 1.55;
 }
 .label-btn:hover {
   color: var(--ice);
@@ -856,10 +878,19 @@ a:hover .arr { transform: translateX(3px); }
   padding: .4rem 1.2rem;
   font-size: clamp(.68rem, 1.75vw, .85rem);
   justify-content: flex-start;
+  white-space: normal;
+  line-height: 1.55;
+  text-align: left;
 }
 @media (max-width: 768px) {
-  .label-btn { font-size: .6rem; }
-  .label-songs a { font-size: .58rem; padding: .35rem 1rem; }
+  .label-btn {
+    font-size: clamp(.6rem, 2.9vw, .74rem);
+    padding: .55rem 1rem;
+  }
+  .label-songs a {
+    font-size: clamp(.58rem, 2.6vw, .7rem);
+    padding: .4rem .95rem;
+  }
 }
 
 /* ── tap-to-play hint ─────────────────────────────── */
@@ -1332,9 +1363,24 @@ a:hover .arr { transform: translateX(3px); }
   .date-date { font-size: .65rem; }
   .date-venue { font-size: .6rem; }
   .past-shows-list .date-row { flex-direction: row; text-align: left; }
-  .past-shows-list .date-date { font-size: .55rem; min-width: 3rem; }
-  .past-shows-list .date-venue { font-size: .5rem; white-space: normal; }
-  .past-shows-year-btn { font-size: .55rem; }
+  .past-shows-list .date-date {
+    font-size: clamp(.52rem, 2.4vw, .62rem);
+    min-width: 3rem;
+  }
+  .past-shows-list .date-venue {
+    font-size: clamp(.52rem, 2.4vw, .64rem);
+    line-height: 1.55;
+    white-space: normal;
+  }
+  .past-shows-year-btn {
+    font-size: clamp(.58rem, 2.8vw, .68rem);
+    letter-spacing: .16em;
+    white-space: normal;
+    padding: .8rem 1.8rem .8rem 0;
+    text-align: left;
+    justify-content: flex-start;
+  }
+  .past-shows-year-btn::after { right: .1rem; }
 
   .ticker { padding: .8rem 0; }
 
