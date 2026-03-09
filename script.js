@@ -200,6 +200,7 @@ const playerEl      = document.getElementById('player');
 const scrollArrowEl = document.querySelector('.scroll-arrow');
 const topbarEl = document.querySelector('.topbar');
 const mainEl = document.querySelector('main');
+const pastShowsSection = document.getElementById('pastShowsSection');
 function positionScrollArrow() {
   const h1Bottom  = h1El.getBoundingClientRect().bottom;
   const playerTop = playerEl.getBoundingClientRect().top;
@@ -345,7 +346,7 @@ function syncPlayerWidth() {
     : h1El.offsetWidth;
   playerEl.style.setProperty('--player-content-w', w + 'px');
   document.documentElement.style.setProperty('--player-h', playerEl.offsetHeight + 'px');
-  syncInfoScrollSpacer();
+  syncCenterScrollSpacer();
 }
 document.fonts.ready.then(syncPlayerWidth);
 let resizePlayerTimer;
@@ -505,7 +506,7 @@ function initLayout() {
   if (mobile) {
     infoSection.style.width = '';
     infoSection.style.transition = 'none';
-    syncInfoScrollSpacer();
+    syncCenterScrollSpacer();
     return;
   }
 
@@ -537,13 +538,13 @@ function initLayout() {
 
   /* re-enable transition — future width changes will animate */
   infoSection.style.transition = '';
-  syncInfoScrollSpacer();
+  syncCenterScrollSpacer();
 }
 
 document.fonts.ready.then(initLayout);
-document.fonts.ready.then(syncInfoScrollSpacer);
+document.fonts.ready.then(syncCenterScrollSpacer);
 window.addEventListener('resize', initLayout, { passive: true });
-window.addEventListener('resize', syncInfoScrollSpacer, { passive: true });
+window.addEventListener('resize', syncCenterScrollSpacer, { passive: true });
 
 /* hide all blocks except the given one with a smooth height+opacity collapse */
 function hideOtherBlocks(openBlock) {
@@ -587,10 +588,12 @@ function centerBandY() {
   return topEdge + (bottomEdge - topEdge) / 2;
 }
 
-function syncInfoScrollSpacer() {
-  if (!mainEl || !infoSection) return;
+let centerScrollTarget = infoSection;
+
+function syncCenterScrollSpacer(targetEl = centerScrollTarget || infoSection) {
+  if (!mainEl || !targetEl) return;
   const lowerViewportSpace = Math.max(0, window.innerHeight - centerBandY());
-  const neededSpace = Math.max(0, lowerViewportSpace - infoSection.offsetHeight / 2);
+  const neededSpace = Math.max(0, lowerViewportSpace - targetEl.offsetHeight / 2);
   document.documentElement.style.setProperty('--info-scroll-spacer', `${Math.ceil(neededSpace)}px`);
 }
 
@@ -600,16 +603,18 @@ function clampScrollY(targetY) {
   return Math.min(Math.max(0, targetY), maxY);
 }
 
-/* return the vertical scroll position that centers the current info section in the usable viewport */
-function currentInfoScrollCenter() {
-  const rect = infoSection.getBoundingClientRect();
+/* return the vertical scroll position that centers the current target in the usable viewport */
+function currentSectionScrollCenter(targetEl = centerScrollTarget || infoSection) {
+  if (!targetEl) return window.scrollY;
+  const rect = targetEl.getBoundingClientRect();
   const rectCenter = rect.top + rect.height / 2;
   return clampScrollY(window.scrollY + rectCenter - centerBandY());
 }
 
 let cancelInfoCenterFollow = null;
 
-function followInfoSectionCenter(duration = 400) {
+function followSectionCenter(targetEl = infoSection, duration = 400) {
+  centerScrollTarget = targetEl;
   cancelInfoCenterFollow?.();
 
   const startY = window.scrollY;
@@ -622,15 +627,15 @@ function followInfoSectionCenter(duration = 400) {
 
   function frame(now) {
     const t = Math.min((now - startedAt) / duration, 1);
-    syncInfoScrollSpacer();
-    const targetY = currentInfoScrollCenter();
+    syncCenterScrollSpacer(targetEl);
+    const targetY = currentSectionScrollCenter(targetEl);
     const nextY = startY + (targetY - startY) * ease(t);
     window.scrollTo({ top: nextY, behavior: 'instant' });
     if (t < 1) {
       rafId = requestAnimationFrame(frame);
     } else {
-      syncInfoScrollSpacer();
-      window.scrollTo({ top: currentInfoScrollCenter(), behavior: 'instant' });
+      syncCenterScrollSpacer(targetEl);
+      window.scrollTo({ top: currentSectionScrollCenter(targetEl), behavior: 'instant' });
       cancelInfoCenterFollow = null;
     }
   }
@@ -659,7 +664,7 @@ infoSection.querySelectorAll('.info-block-header').forEach(header => {
       showAllBlocks();
       if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
       infoSection.offsetHeight;
-      followInfoSectionCenter(400);
+      followSectionCenter(infoSection, 400);
     } else {
       const content = block.querySelector('.info-block-content');
 
@@ -667,7 +672,7 @@ infoSection.querySelectorAll('.info-block-header').forEach(header => {
       if (window.innerWidth > 768) infoSection.style.width = expandedWidthForBlock(block) + 'px';
       block.classList.add('open');
       content.style.maxHeight = content.scrollHeight + 'px';
-      followInfoSectionCenter(400);
+      followSectionCenter(infoSection, 400);
 
       /* scramble-settle the revealed text */
       const textEls  = Array.from(content.querySelectorAll('.bio-text, .bio-press-links a, .label-btn'));
@@ -744,7 +749,7 @@ infoSection.querySelectorAll('.label-group').forEach(group => {
       songs.style.maxHeight = '0';
       songs.style.opacity   = '0';
       showAllLabelGroups();
-      followInfoSectionCenter(400);
+      followSectionCenter(infoSection, 400);
       /* parent max-height can only shrink after transitions finish (content is taller mid-transition) */
       setTimeout(() => {
         if (parentContent.style.maxHeight && parentContent.style.maxHeight !== '0px')
@@ -759,7 +764,7 @@ infoSection.querySelectorAll('.label-group').forEach(group => {
       const finalContentH = parentContent.scrollHeight;
       if (parentContent.style.maxHeight && parentContent.style.maxHeight !== '0px')
         parentContent.style.maxHeight = finalContentH + 'px';
-      followInfoSectionCenter(400);
+      followSectionCenter(infoSection, 400);
       /* scramble-settle song links as they slide in */
       Array.from(songs.querySelectorAll('a')).forEach(a => {
         const text = a.textContent;
@@ -782,7 +787,7 @@ document.addEventListener('click', e => {
   resetLabelGroups(openBlock);
   showAllBlocks();
   if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
-  followInfoSectionCenter(400);
+  followSectionCenter(infoSection, 400);
 });
 
 /* apply hover-scramble to all remaining static text elements
@@ -862,10 +867,12 @@ document.querySelectorAll('.past-shows-year').forEach(group => {
       group.classList.remove('open');
       list.style.maxHeight = '0';
       list.style.opacity   = '0';
+      followSectionCenter(pastShowsSection, 350);
     } else {
       group.classList.add('open');
       list.style.maxHeight = list.scrollHeight + 'px';
       list.style.opacity   = '1';
+      followSectionCenter(pastShowsSection, 350);
       /* scramble-settle the revealed rows */
       Array.from(list.querySelectorAll('.date-date, .date-venue')).forEach(el => {
         const text = el.textContent;
