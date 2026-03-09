@@ -1297,6 +1297,86 @@ a:hover .arr { transform: translateX(3px); }
   pointer-events: none;
 }
 
+@media (min-width: 1100px) {
+  main {
+    width: min(1720px, 95vw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(380px, .95fr);
+    grid-auto-flow: row dense;
+    align-items: start;
+    column-gap: clamp(2rem, 3vw, 4rem);
+    row-gap: clamp(1.5rem, 2.4vw, 2.8rem);
+    padding: 72px clamp(2rem, 3vw, 3.5rem) clamp(4rem, 6vw, 6rem);
+  }
+  .hero,
+  .ticker,
+  .ticker-reverse {
+    grid-column: 1 / -1;
+  }
+  .dates-section,
+  .past-shows-section,
+  .featured-release,
+  .releases-section {
+    grid-column: 1;
+    max-width: 100%;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .dates-section .section-label,
+  .past-shows-section .section-label,
+  .featured-release .section-label,
+  .releases-section .section-label {
+    text-align: left;
+  }
+  .dates-list,
+  .past-shows-inner {
+    max-width: 100%;
+    margin: 0;
+  }
+  .date-row,
+  .past-shows-list .date-row {
+    justify-content: space-between;
+  }
+  .date-venue,
+  .past-shows-list .date-venue {
+    text-align: right;
+  }
+  .past-shows-year-btn {
+    justify-content: flex-start;
+    text-align: left;
+    padding-right: 2rem;
+  }
+  .past-shows-list {
+    padding-left: 0;
+  }
+  .featured-inner {
+    align-items: flex-start;
+  }
+  .featured-artwork-wrap {
+    width: clamp(190px, 26vw, 320px);
+  }
+  .releases-section {
+    padding-top: clamp(1.2rem, 2vw, 2rem);
+  }
+  .release-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.1rem, 1.8vw, 1.7rem);
+  }
+  .info-section {
+    grid-column: 2;
+    grid-row: 4 / span 6;
+    position: sticky;
+    top: calc(72px + 1.5rem);
+    margin: 0;
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+    z-index: 5;
+  }
+}
+
 /* ── mobile adjustments for new sections ─────────── */
 @media (max-width: 768px) {
   .featured-release { padding: 3rem 1rem; max-width: 100vw; }

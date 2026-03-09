@@ -521,6 +521,15 @@ const CONNECT_EXTRA_WIDTH = 320;
 /* auto-center removed — multiple sections now, free scroll */
 
 let narrowW = 0, expandedW = 0;
+const WIDE_DESKTOP_BP = 1100;
+
+function useWideDesktopLayout() {
+  return window.innerWidth >= WIDE_DESKTOP_BP;
+}
+
+function useAnimatedInfoWidth() {
+  return window.innerWidth > 768 && !useWideDesktopLayout();
+}
 
 function expandedWidthForBlock(block) {
   if (!block) return expandedW;
@@ -531,7 +540,7 @@ function expandedWidthForBlock(block) {
 
 function initLayout() {
   const mobile = window.innerWidth <= 768;
-  if (mobile) {
+  if (mobile || useWideDesktopLayout()) {
     infoSection.style.width = '';
     infoSection.style.transition = 'none';
     syncCenterScrollSpacer();
@@ -695,14 +704,14 @@ infoSection.querySelectorAll('.info-block-header').forEach(header => {
 
     if (isOpen) {
       showAllBlocks();
-      if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
+      if (useAnimatedInfoWidth()) infoSection.style.width = narrowW + 'px';
       infoSection.offsetHeight;
       followSectionCenter(infoSection, 400);
     } else {
       const content = block.querySelector('.info-block-content');
 
       hideOtherBlocks(block);
-      if (window.innerWidth > 768) infoSection.style.width = expandedWidthForBlock(block) + 'px';
+      if (useAnimatedInfoWidth()) infoSection.style.width = expandedWidthForBlock(block) + 'px';
       block.classList.add('open');
       content.style.maxHeight = content.scrollHeight + 'px';
       followSectionCenter(infoSection, 400);
@@ -819,7 +828,7 @@ document.addEventListener('click', e => {
   openBlock.querySelector('.info-block-content').style.maxHeight = '0px';
   resetLabelGroups(openBlock);
   showAllBlocks();
-  if (window.innerWidth > 768) infoSection.style.width = narrowW + 'px';
+  if (useAnimatedInfoWidth()) infoSection.style.width = narrowW + 'px';
   syncSectionCenterState(infoSection);
 });
 
