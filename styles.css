@@ -694,6 +694,7 @@ a:hover .arr { transform: translateX(3px); }
 }
 .info-section .bio-press-links a {
   justify-content: flex-start;
+  white-space: nowrap;
   background-position: 0 0, 0 0, calc(100% - 5px) 0, calc(100% - 5px) 0, 0 100%, 0 100%, calc(100% - 5px) 100%, calc(100% - 5px) 100%;
 }
 .connect-links {
