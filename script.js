@@ -527,18 +527,14 @@ window.addEventListener('scroll', () => {
 function updateTopbarFromHeroPosition() {
   const barH = topbarEl.offsetHeight || 72;
   const hiddenY = -(barH + 2);
-  const vh = window.innerHeight || document.documentElement.clientHeight;
   const h1Rect = h1El.getBoundingClientRect();
-
-  /* hidden while title is fully off-screen above; reveal only as it re-enters view */
-  let hideProgress = 0;
-  if (h1Rect.bottom <= 0) {
-    hideProgress = 1;
-  } else if (h1Rect.top < vh && h1Rect.bottom > 0) {
-    const visible = Math.min(h1Rect.bottom, vh) - Math.max(h1Rect.top, 0);
-    const visibilityRatio = Math.max(0, Math.min(1, visible / Math.max(1, h1Rect.height)));
-    hideProgress = 1 - visibilityRatio;
-  }
+  const pushStartY = barH + 36;          /* title reaches this line -> starts pushing bar */
+  const pushEndY = -h1Rect.height * 0.4; /* title above this point -> bar fully off-screen */
+  const travel = Math.max(1, pushStartY - pushEndY);
+  const raw = (pushStartY - h1Rect.top) / travel;
+  const clamped = Math.max(0, Math.min(1, raw));
+  /* smoothstep for a natural push/pull curve */
+  const hideProgress = clamped * clamped * (3 - 2 * clamped);
 
   topbarEl.style.transform = `translateY(${hiddenY * hideProgress}px)`;
   topbarEl.style.opacity = `${1 - hideProgress}`;
