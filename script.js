@@ -958,11 +958,6 @@ pastShowsYears.forEach(group => {
       list.style.opacity   = '1';
       hideOtherPastShowsYears(group);
       followSectionCenter(pastShowsSection, 350);
-      /* scramble-settle the revealed rows */
-      Array.from(list.querySelectorAll('.date-date, .date-venue')).forEach(el => {
-        const text = el.textContent;
-        scrambleThenSettleAt(text, t => { el.textContent = t; }, 300, accordionScrambleLimit(text));
-      });
     }
   });
 
@@ -978,7 +973,6 @@ pastShowsYears.forEach(group => {
 /* hover-scramble for past shows elements */
 document.querySelectorAll('.past-shows-year-btn').forEach(addScrambleHover);
 document.querySelectorAll('.past-shows-back-btn').forEach(addScrambleHover);
-document.querySelectorAll('.past-shows-list .date-date, .past-shows-list .date-venue').forEach(addScrambleHover);
 
 document.addEventListener('click', e => {
   const openGroup = pastShowsSection.querySelector('.past-shows-year.open');
