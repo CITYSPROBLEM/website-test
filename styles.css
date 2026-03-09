@@ -1196,7 +1196,7 @@ a:hover .arr { transform: translateX(3px); }
 }
 .past-shows-year { display: flex; flex-direction: column; }
 .past-shows-year-btn {
-  display: flex; align-items: center; justify-content: flex-start;
+  display: flex; align-items: center; justify-content: center;
   width: 100%;
   font-family: 'Michroma', sans-serif;
   font-size: clamp(.65rem, 1.8vw, .9rem);
