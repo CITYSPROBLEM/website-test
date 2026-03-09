@@ -524,36 +524,67 @@ window.addEventListener('scroll', () => {
   scrollArrowEl.style.opacity = hidden ? '0' : '';
 }, { passive: true });
 
-function updateTopbarFromHeroPosition() {
+function topbarTargetProgressFromHero() {
   const barH = topbarEl.offsetHeight || 72;
-  const hiddenY = -(barH + 2);
   const h1Rect = h1El.getBoundingClientRect();
   const pushStartY = barH + 36;          /* title reaches this line -> starts pushing bar */
   const pushEndY = -h1Rect.height * 0.4; /* title above this point -> bar fully off-screen */
   const travel = Math.max(1, pushStartY - pushEndY);
-  const raw = (pushStartY - h1Rect.top) / travel;
+  const pushDistance = pushStartY - h1Rect.top;
+  /* dead-zone near contact to avoid micro jitter around the push threshold */
+  const deadZone = 10;
+  const effectiveDistance = pushDistance <= deadZone ? 0 : pushDistance - deadZone;
+  const raw = effectiveDistance / travel;
   const clamped = Math.max(0, Math.min(1, raw));
   /* smoothstep for a natural push/pull curve */
-  const hideProgress = clamped * clamped * (3 - 2 * clamped);
+  return clamped * clamped * (3 - 2 * clamped);
+}
 
+function applyTopbarProgress(hideProgress) {
+  const barH = topbarEl.offsetHeight || 72;
+  const hiddenY = -(barH + 2);
   topbarEl.style.transform = `translateY(${hiddenY * hideProgress}px)`;
   topbarEl.style.opacity = `${1 - hideProgress}`;
   topbarEl.style.pointerEvents = hideProgress > 0.98 ? 'none' : '';
 }
 
 let topbarRafPending = false;
+let topbarMotionRaf = 0;
+let topbarProgress = 0;
+let topbarTargetProgress = 0;
+
+function animateTopbarProgress() {
+  const delta = topbarTargetProgress - topbarProgress;
+  if (Math.abs(delta) < 0.002) {
+    topbarProgress = topbarTargetProgress;
+    applyTopbarProgress(topbarProgress);
+    topbarMotionRaf = 0;
+    return;
+  }
+  topbarProgress += delta * 0.2;
+  applyTopbarProgress(topbarProgress);
+  topbarMotionRaf = requestAnimationFrame(animateTopbarProgress);
+}
+
 function scheduleTopbarPositionUpdate() {
   if (topbarRafPending) return;
   topbarRafPending = true;
   requestAnimationFrame(() => {
     topbarRafPending = false;
-    updateTopbarFromHeroPosition();
+    topbarTargetProgress = topbarTargetProgressFromHero();
+    if (!topbarMotionRaf) topbarMotionRaf = requestAnimationFrame(animateTopbarProgress);
   });
 }
 window.addEventListener('scroll', scheduleTopbarPositionUpdate, { passive: true });
 window.addEventListener('resize', scheduleTopbarPositionUpdate, { passive: true });
-document.fonts.ready.then(updateTopbarFromHeroPosition);
-updateTopbarFromHeroPosition();
+document.fonts.ready.then(() => {
+  topbarTargetProgress = topbarTargetProgressFromHero();
+  topbarProgress = topbarTargetProgress;
+  applyTopbarProgress(topbarProgress);
+});
+topbarTargetProgress = topbarTargetProgressFromHero();
+topbarProgress = topbarTargetProgress;
+applyTopbarProgress(topbarProgress);
 
 /* info section scramble — apply hover-scramble after DOM ready */
 const infoSection = document.getElementById('infoSection');
