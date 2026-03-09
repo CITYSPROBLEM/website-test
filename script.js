@@ -891,6 +891,13 @@ Array.from(document.querySelectorAll('.section-label'))
   .filter(el => !pastShowsSection.contains(el))
   .forEach(addScrambleHover);
 
+const laneTextEls = Array.from(document.querySelectorAll('.lane-title, .lane-item, .lane-link'));
+laneTextEls.forEach(el => {
+  const text = el.textContent;
+  scrambleThenSettleAt(text, t => { el.textContent = t; }, 420, accordionScrambleLimit(text));
+  addScrambleHover(el);
+});
+
 /* past shows year accordion */
 const pastShowsYears = Array.from(document.querySelectorAll('.past-shows-year'));
 
