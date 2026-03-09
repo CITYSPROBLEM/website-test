@@ -99,6 +99,12 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   border-bottom: 1px solid rgba(0,212,255,.12);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  transition: transform .36s cubic-bezier(0.4, 0, 0.2, 1), opacity .28s ease;
+}
+.topbar.scroll-hide {
+  transform: translateY(calc(-100% - 2px));
+  opacity: 0;
+  pointer-events: none;
 }
 .topbar-logo {
   height: 36px;

@@ -516,6 +516,7 @@ window.addEventListener('resize', () => {
 
 /* hide scroll arrow once user has scrolled past the hero */
 let scrollArrowHidden = null;
+let topbarHiddenInHeroZone = null;
 scrollArrowEl.style.transition = 'opacity .4s ease';
 window.addEventListener('scroll', () => {
   const hidden = window.scrollY > 80;
@@ -523,6 +524,22 @@ window.addEventListener('scroll', () => {
   scrollArrowHidden = hidden;
   scrollArrowEl.style.opacity = hidden ? '0' : '';
 }, { passive: true });
+
+function updateTopbarHeroWindow() {
+  const h1Rect = h1El.getBoundingClientRect();
+  const h1TopDoc = window.scrollY + h1Rect.top;
+  const startY = Math.max(0, h1TopDoc - window.innerHeight * 0.34);
+  const endY = h1TopDoc + h1Rect.height + window.innerHeight * 0.24;
+  const shouldHide = window.scrollY >= startY && window.scrollY <= endY;
+  if (shouldHide === topbarHiddenInHeroZone) return;
+  topbarHiddenInHeroZone = shouldHide;
+  topbarEl.classList.toggle('scroll-hide', shouldHide);
+}
+
+window.addEventListener('scroll', updateTopbarHeroWindow, { passive: true });
+window.addEventListener('resize', updateTopbarHeroWindow, { passive: true });
+document.fonts.ready.then(updateTopbarHeroWindow);
+updateTopbarHeroWindow();
 
 /* info section scramble — apply hover-scramble after DOM ready */
 const infoSection = document.getElementById('infoSection');
