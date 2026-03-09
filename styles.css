@@ -148,6 +148,13 @@ main {
   text-align: center;
   overflow-x: hidden;
 }
+main::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: var(--info-scroll-spacer, 0px);
+  flex: 0 0 auto;
+}
 .hero {
   min-height: calc(100dvh - 72px);
   display: flex; flex-direction: column;

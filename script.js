@@ -199,6 +199,7 @@ document.querySelectorAll('nav a').forEach(a => {
 const playerEl      = document.getElementById('player');
 const scrollArrowEl = document.querySelector('.scroll-arrow');
 const topbarEl = document.querySelector('.topbar');
+const mainEl = document.querySelector('main');
 function positionScrollArrow() {
   const h1Bottom  = h1El.getBoundingClientRect().bottom;
   const playerTop = playerEl.getBoundingClientRect().top;
@@ -344,6 +345,7 @@ function syncPlayerWidth() {
     : h1El.offsetWidth;
   playerEl.style.setProperty('--player-content-w', w + 'px');
   document.documentElement.style.setProperty('--player-h', playerEl.offsetHeight + 'px');
+  syncInfoScrollSpacer();
 }
 document.fonts.ready.then(syncPlayerWidth);
 let resizePlayerTimer;
@@ -503,6 +505,7 @@ function initLayout() {
   if (mobile) {
     infoSection.style.width = '';
     infoSection.style.transition = 'none';
+    syncInfoScrollSpacer();
     return;
   }
 
@@ -534,10 +537,13 @@ function initLayout() {
 
   /* re-enable transition — future width changes will animate */
   infoSection.style.transition = '';
+  syncInfoScrollSpacer();
 }
 
 document.fonts.ready.then(initLayout);
+document.fonts.ready.then(syncInfoScrollSpacer);
 window.addEventListener('resize', initLayout, { passive: true });
+window.addEventListener('resize', syncInfoScrollSpacer, { passive: true });
 
 /* hide all blocks except the given one with a smooth height+opacity collapse */
 function hideOtherBlocks(openBlock) {
@@ -581,6 +587,13 @@ function centerBandY() {
   return topEdge + (bottomEdge - topEdge) / 2;
 }
 
+function syncInfoScrollSpacer() {
+  if (!mainEl || !infoSection) return;
+  const lowerViewportSpace = Math.max(0, window.innerHeight - centerBandY());
+  const neededSpace = Math.max(0, lowerViewportSpace - infoSection.offsetHeight / 2);
+  document.documentElement.style.setProperty('--info-scroll-spacer', `${Math.ceil(neededSpace)}px`);
+}
+
 function clampScrollY(targetY) {
   const doc = document.documentElement;
   const maxY = Math.max(0, doc.scrollHeight - window.innerHeight);
@@ -609,12 +622,14 @@ function followInfoSectionCenter(duration = 400) {
 
   function frame(now) {
     const t = Math.min((now - startedAt) / duration, 1);
+    syncInfoScrollSpacer();
     const targetY = currentInfoScrollCenter();
     const nextY = startY + (targetY - startY) * ease(t);
     window.scrollTo({ top: nextY, behavior: 'instant' });
     if (t < 1) {
       rafId = requestAnimationFrame(frame);
     } else {
+      syncInfoScrollSpacer();
       window.scrollTo({ top: currentInfoScrollCenter(), behavior: 'instant' });
       cancelInfoCenterFollow = null;
     }
