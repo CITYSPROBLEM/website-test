@@ -797,13 +797,15 @@ a:hover .arr { transform: translateX(3px); }
   justify-content: flex-start;
   background-position: 0 0, 0 0, calc(100% - 5px) 0, calc(100% - 5px) 0, 0 100%, 0 100%, calc(100% - 5px) 100%, calc(100% - 5px) 100%;
 }
-.connect-links {
+.connect-row {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: .35rem;
+  margin-top: .35rem;
 }
-.connect-links a {
+.connect-row:first-of-type { margin-top: 0; }
+.connect-row a {
   padding: .35rem .75rem;
   font-size: clamp(.56rem, 1.35vw, .68rem);
   letter-spacing: .065em;
