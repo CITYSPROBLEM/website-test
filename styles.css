@@ -1165,7 +1165,7 @@ a:hover .arr { transform: translateX(3px); }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(.3rem, 1.1vw, .65rem);
+  gap: clamp(.2rem, .8vw, .45rem);
   padding: .6rem 0;
   border-bottom: 1px solid rgba(0,212,255,.08);
 }
@@ -1175,6 +1175,7 @@ a:hover .arr { transform: translateX(3px); }
   letter-spacing: .15em;
   color: var(--ice);
   white-space: nowrap;
+  text-align: right;
   text-shadow: 0 0 10px rgba(0,212,255,.25);
 }
 .date-venue {
