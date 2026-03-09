@@ -524,16 +524,25 @@ window.addEventListener('scroll', () => {
   scrollArrowEl.style.opacity = hidden ? '0' : '';
 }, { passive: true });
 
-function topbarTargetFromHero() {
+let topbarPushStartScroll = 0;
+let topbarPushEndScroll = 1;
+
+function recalcTopbarScrollRange() {
   const barH = topbarEl.offsetHeight || 72;
   const h1Rect = h1El.getBoundingClientRect();
-  const pushStartY = barH + 36;          /* title reaches this line -> starts pushing bar */
-  const pushEndY = -h1Rect.height * 0.4; /* title above this point -> bar fully off-screen */
-  const travel = Math.max(1, pushStartY - pushEndY);
-  const pushDistance = pushStartY - h1Rect.top;
-  const raw = pushDistance / travel;
+  const h1TopDoc = window.scrollY + h1Rect.top;
+  const h1H = Math.max(1, h1Rect.height || h1El.offsetHeight || 64);
+
+  /* hardcoded scroll window: starts as title nears topbar, completes shortly after crossing */
+  topbarPushStartScroll = Math.max(0, h1TopDoc - (barH + 36));
+  topbarPushEndScroll = topbarPushStartScroll + Math.max(92, h1H + barH * 0.65);
+}
+
+function topbarTargetFromScroll() {
+  const range = Math.max(1, topbarPushEndScroll - topbarPushStartScroll);
+  const raw = (window.scrollY - topbarPushStartScroll) / range;
   const clamped = Math.max(0, Math.min(1, raw));
-  /* smoothstep for a natural push/pull curve */
+  /* smoothstep keeps the illusion of physical push/pull while remaining deterministic */
   return clamped * clamped * (3 - 2 * clamped);
 }
 
@@ -553,18 +562,23 @@ function scheduleTopbarPositionUpdate() {
   topbarRafPending = true;
   requestAnimationFrame(() => {
     topbarRafPending = false;
-    const target = topbarTargetFromHero();
+    const target = topbarTargetFromScroll();
     topbarProgress = target;
     applyTopbarProgress(topbarProgress);
   });
 }
 window.addEventListener('scroll', scheduleTopbarPositionUpdate, { passive: true });
-window.addEventListener('resize', scheduleTopbarPositionUpdate, { passive: true });
+window.addEventListener('resize', () => {
+  recalcTopbarScrollRange();
+  scheduleTopbarPositionUpdate();
+}, { passive: true });
 document.fonts.ready.then(() => {
-  topbarProgress = topbarTargetFromHero();
+  recalcTopbarScrollRange();
+  topbarProgress = topbarTargetFromScroll();
   applyTopbarProgress(topbarProgress);
 });
-topbarProgress = topbarTargetFromHero();
+recalcTopbarScrollRange();
+topbarProgress = topbarTargetFromScroll();
 applyTopbarProgress(topbarProgress);
 
 /* info section scramble — apply hover-scramble after DOM ready */
