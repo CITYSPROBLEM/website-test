@@ -932,11 +932,11 @@ a:hover .arr { transform: translateX(3px); }
   font-family: 'Michroma', sans-serif;
   font-size: clamp(.45rem, 1vw, .6rem);
   letter-spacing: .3em;
-  color: rgba(0,212,255,.3);
+  color: rgba(0,212,255,.45);
   text-transform: uppercase;
 }
 .ticker-sep {
-  color: rgba(0,212,255,.15);
+  color: rgba(0,212,255,.25);
   font-size: clamp(.45rem, 1vw, .6rem);
 }
 
