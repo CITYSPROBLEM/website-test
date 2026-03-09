@@ -994,16 +994,7 @@ window.addEventListener('scroll', () => {
 
 /* info section scramble — apply hover-scramble after DOM ready */
 const infoSection = document.getElementById('infoSection');
-const MAIN_BLOCK_SELECTOR   = '.info-block:not(.connect-block)';
-const MAIN_HEADER_SELECTOR  = `${MAIN_BLOCK_SELECTOR} .info-block-header`;
-const MAIN_OPEN_SELECTOR    = `${MAIN_BLOCK_SELECTOR}.open`;
-const MAIN_LINK_SELECTOR    = `${MAIN_BLOCK_SELECTOR} .bio-press-links a`;
-const MAIN_LABEL_SELECTOR   = `${MAIN_BLOCK_SELECTOR} .bio-panel-label`;
-function getMainHeaders() { return Array.from(infoSection.querySelectorAll(MAIN_HEADER_SELECTOR)); }
-function getMainOpenBlocks() { return Array.from(infoSection.querySelectorAll(MAIN_OPEN_SELECTOR)); }
-function getMainOpenBlock() { return infoSection.querySelector(MAIN_OPEN_SELECTOR); }
-function getMainLinks() { return Array.from(infoSection.querySelectorAll(MAIN_LINK_SELECTOR)); }
-function getMainLabels() { return Array.from(infoSection.querySelectorAll(MAIN_LABEL_SELECTOR)); }
+const CONNECT_EXTRA_WIDTH = 160;
 
 /* reveal info section once it scrolls into view */
 {
@@ -1049,6 +1040,13 @@ function getMainLabels() { return Array.from(infoSection.querySelectorAll(MAIN_L
 
 let narrowW = 0, expandedW = 0;
 
+function expandedWidthForBlock(block) {
+  if (!block) return expandedW;
+  const limit = window.innerWidth * 0.95;
+  if (!block.classList.contains('connect-block')) return expandedW;
+  return Math.min(expandedW + CONNECT_EXTRA_WIDTH, limit);
+}
+
 function initLayout() {
   const mobile = window.innerWidth <= 768;
   if (mobile) {
@@ -1063,14 +1061,14 @@ function initLayout() {
   infoSection.offsetWidth; /* force reflow */
 
   /* equalize link widths at full measure width */
-  const links = getMainLinks();
+  const links = Array.from(infoSection.querySelectorAll('.bio-press-links a'));
   links.forEach(a => { a.style.width = 'auto'; });
   infoSection.offsetWidth;
   const maxLinkW = links.reduce((m, a) => Math.max(m, a.offsetWidth), 0);
   if (maxLinkW > 0) links.forEach(a => { a.style.width = maxLinkW + 'px'; });
 
   /* measure label widths for narrow (collapsed) state */
-  const labels = getMainLabels();
+  const labels = Array.from(infoSection.querySelectorAll('.bio-panel-label'));
   const maxLabelW = labels.reduce((m, el) => Math.max(m, el.offsetWidth), 0);
   const hPad = parseFloat(getComputedStyle(infoSection).paddingLeft) * 2;
 
@@ -1078,8 +1076,9 @@ function initLayout() {
   narrowW = Math.max(280, maxLabelW + hPad + 40); /* +40 for toggle icon */
 
   /* set correct width for current state — no transition yet */
-  const isExpanded = !!getMainOpenBlock();
-  infoSection.style.width = (isExpanded ? expandedW : narrowW) + 'px';
+  const openBlock = infoSection.querySelector('.info-block.open');
+  const widthForOpen = openBlock ? expandedWidthForBlock(openBlock) : narrowW;
+  infoSection.style.width = widthForOpen + 'px';
   infoSection.offsetWidth;
 
   /* re-enable transition — future width changes will animate */
@@ -1151,13 +1150,13 @@ function infoScrollCenter(finalH) {
 }
 
 /* accordion */
-infoSection.querySelectorAll(MAIN_HEADER_SELECTOR).forEach(header => {
+infoSection.querySelectorAll('.info-block-header').forEach(header => {
   header.addEventListener('click', () => {
     const block  = header.closest('.info-block');
     const isOpen = block.classList.contains('open');
 
     /* close any open block */
-    getMainOpenBlocks().forEach(b => {
+    infoSection.querySelectorAll('.info-block.open').forEach(b => {
       b.classList.remove('open');
       b.querySelector('.info-block-content').style.maxHeight = '0px';
       resetLabelGroups(b);
@@ -1165,7 +1164,7 @@ infoSection.querySelectorAll(MAIN_HEADER_SELECTOR).forEach(header => {
 
     if (isOpen) {
       /* closing — compute final height, apply changes, then read fresh scrollY for centering */
-      const allHeaders = getMainHeaders();
+      const allHeaders = Array.from(infoSection.querySelectorAll('.info-block-header'));
       const finalH = allHeaders.reduce((s, h) => s + h.offsetHeight, 0);
 
       showAllBlocks();
@@ -1178,7 +1177,7 @@ infoSection.querySelectorAll(MAIN_HEADER_SELECTOR).forEach(header => {
       const content = block.querySelector('.info-block-content');
 
       hideOtherBlocks(block);
-      if (window.innerWidth > 768) infoSection.style.width = expandedW + 'px';
+      if (window.innerWidth > 768) infoSection.style.width = expandedWidthForBlock(block) + 'px';
       block.classList.add('open');
       /* reading scrollHeight here forces reflow at the new width — used for both maxHeight and finalH */
       content.style.maxHeight = content.scrollHeight + 'px';
@@ -1297,10 +1296,10 @@ infoSection.querySelectorAll('.label-group').forEach(group => {
 /* click outside info section to collapse open accordion */
 document.addEventListener('click', e => {
   if (menuExpanded) return;
-  const openBlock = getMainOpenBlock();
+  const openBlock = infoSection.querySelector('.info-block.open');
   if (!openBlock || infoSection.contains(e.target)) return;
 
-  const allHeaders = getMainHeaders();
+  const allHeaders = Array.from(infoSection.querySelectorAll('.info-block-header'));
   const finalH  = allHeaders.reduce((s, h) => s + h.offsetHeight, 0);
   const targetY = infoScrollCenter(finalH);
 
