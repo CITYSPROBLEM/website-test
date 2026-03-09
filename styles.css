@@ -1379,8 +1379,6 @@ a:hover .arr { transform: translateX(3px); }
   justify-self: center;
   align-self: center;
   box-shadow: inset 0 0 14px rgba(0,212,255,.15), 0 0 16px rgba(0,212,255,.16);
-  overflow: visible;
-  contain: none;
 }
 .booking-signal-card .portfolio-title { margin: 0; }
 .booking-signal-card .portfolio-meta { margin: 0; }
