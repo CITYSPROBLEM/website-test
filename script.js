@@ -1059,7 +1059,7 @@ function initLayout() {
 
   /* disable transition during measurement */
   infoSection.style.transition = 'none';
-  infoSection.style.width = Math.min(window.innerWidth * 0.8, 1200) + 'px';
+  infoSection.style.width = Math.min(window.innerWidth * 0.9, 1400) + 'px';
   infoSection.offsetWidth; /* force reflow */
 
   /* equalize link widths at full measure width */
@@ -1074,7 +1074,7 @@ function initLayout() {
   const maxLabelW = labels.reduce((m, el) => Math.max(m, el.offsetWidth), 0);
   const hPad = parseFloat(getComputedStyle(infoSection).paddingLeft) * 2;
 
-  expandedW = Math.min(maxLinkW + hPad, window.innerWidth * 0.8);
+  expandedW = Math.min(maxLinkW + hPad, window.innerWidth * 0.9);
   narrowW = Math.max(280, maxLabelW + hPad + 40); /* +40 for toggle icon */
 
   /* set correct width for current state — no transition yet */

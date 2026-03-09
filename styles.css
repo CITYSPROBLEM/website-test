@@ -282,8 +282,8 @@ main {
 .info-section {
   display: block;
   margin: clamp(2rem, 4vw, 4rem) auto;
-  max-width: min(80vw, 1200px);
-  min-width: min(260px, 90vw);
+  max-width: min(90vw, 1400px);
+  min-width: min(320px, 92vw);
   transition: width .4s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0 clamp(1.5rem, 4vw, 3.5rem);
   border: 1px solid rgba(0,212,255,.14);
