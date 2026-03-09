@@ -717,33 +717,6 @@ a:hover .arr { transform: translateX(3px); }
   text-transform: uppercase;
   justify-content: center;
 }
-.connect-email {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-bottom: 1.5rem;
-}
-.connect-email-link {
-  width: 100%;
-  display: inline-flex;
-  flex-direction: column;
-  gap: .1rem;
-  padding: .4rem 1rem;
-  font-size: clamp(.75rem, 2.1vw, .95rem);
-  letter-spacing: .12em;
-  justify-content: flex-start;
-  text-transform: none;
-}
-.connect-email-link span {
-  font-size: clamp(.78rem, 2vw, 1rem);
-  letter-spacing: .1em;
-}
-.connect-email-link small {
-  font-size: .55rem;
-  letter-spacing: .3em;
-  text-transform: uppercase;
-  color: rgba(200,230,255,.5);
-}
 /* ── label releases ──────────────────────────────── */
 .label-releases {
   display: flex; flex-direction: column;
