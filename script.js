@@ -278,11 +278,15 @@ if (!isCoarsePointer) {
 /* ── mouse-reactive aurora ──────────────────────── */
 {
   const auroraEl = document.querySelector('.aurora');
-  if (auroraEl && !isCoarsePointer) {
+  const heroEl = document.querySelector('.hero');
+  if (auroraEl && heroEl && !isCoarsePointer) {
     let ax = 0, ay = 0, targetAx = 0, targetAy = 0;
-    const heroEl = document.querySelector('.hero');
+    let auroraRafId = 0;
+    let auroraRunning = false;
+    let heroVisible = true;
 
     document.addEventListener('mousemove', e => {
+      if (!auroraRunning) return;
       const rect = heroEl.getBoundingClientRect();
       /* normalise cursor to -1…+1 relative to hero centre */
       targetAx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
@@ -290,6 +294,7 @@ if (!isCoarsePointer) {
     });
 
     function auroraFrame() {
+      if (!auroraRunning) return;
       ax += (targetAx - ax) * 0.06;
       ay += (targetAy - ay) * 0.06;
       const moveX = ax * 120;          /* max px offset */
@@ -298,9 +303,37 @@ if (!isCoarsePointer) {
       const opacity = 0.6 + Math.abs(ax * ay) * 0.4;
       auroraEl.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scale})`;
       auroraEl.style.opacity = opacity;
-      requestAnimationFrame(auroraFrame);
+      auroraRafId = requestAnimationFrame(auroraFrame);
     }
-    requestAnimationFrame(auroraFrame);
+
+    function startAurora() {
+      if (auroraRunning) return;
+      auroraRunning = true;
+      auroraRafId = requestAnimationFrame(auroraFrame);
+    }
+
+    function stopAurora() {
+      if (!auroraRunning) return;
+      auroraRunning = false;
+      cancelAnimationFrame(auroraRafId);
+      auroraRafId = 0;
+    }
+
+    function syncAuroraState() {
+      if (heroVisible && !document.hidden) startAurora();
+      else stopAurora();
+    }
+
+    const heroObserver = new IntersectionObserver(entries => {
+      heroVisible = entries.some(entry => entry.isIntersecting);
+      syncAuroraState();
+    }, { threshold: 0.05 });
+    heroObserver.observe(heroEl);
+
+    document.addEventListener('visibilitychange', syncAuroraState);
+    window.addEventListener('pageshow', syncAuroraState, { passive: true });
+    window.addEventListener('pagehide', stopAurora, { passive: true });
+    syncAuroraState();
   }
 }
 
@@ -534,10 +567,26 @@ window.addEventListener('resize', () => {
   resizeViz();
   window.addEventListener('resize', resizeViz);
 
-  window.drawVisualizer = function() {
+  function clearVisualizer() {
     const W = vizCanvas.clientWidth, H = vizCanvas.clientHeight;
     vizCtx.clearRect(0, 0, W, H);
-    if (!analyser || audio.paused) return;
+  }
+
+  function shouldDrawVisualizer() {
+    return Boolean(analyser && !audio.paused && !document.hidden);
+  }
+
+  audio.addEventListener('pause', clearVisualizer);
+  audio.addEventListener('ended', clearVisualizer);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) clearVisualizer();
+  });
+
+  window.shouldDrawVisualizer = shouldDrawVisualizer;
+  window.drawVisualizer = function() {
+    if (!shouldDrawVisualizer()) return;
+    const W = vizCanvas.clientWidth, H = vizCanvas.clientHeight;
+    vizCtx.clearRect(0, 0, W, H);
     analyser.getByteFrequencyData(dataArray);
     const bars = dataArray.length;
     const barW = W / bars;
@@ -1236,13 +1285,40 @@ if (!isCoarsePointer) {
 }
 
 /* cursor ring spring + grain sync loop */
-(function tick() {
-  if (!isCoarsePointer) {
+{
+  let tickRafId = 0;
+  let tickRunning = false;
+
+  function tick() {
+    if (!tickRunning) return;
     rx += (mx - rx) * .25; ry += (my - ry) * .25;
     ring.style.transform = `translate(${rx}px,${ry}px)`;
     if (++grainFrame % 6 === 0)
       turbEl.setAttribute('seed', (noiseSeed = (noiseSeed + 1) % 200));
-    window.drawVisualizer();
-    requestAnimationFrame(tick);
+    if (window.shouldDrawVisualizer?.()) window.drawVisualizer();
+    tickRafId = requestAnimationFrame(tick);
   }
-})();
+
+  function startTick() {
+    if (tickRunning) return;
+    tickRunning = true;
+    tickRafId = requestAnimationFrame(tick);
+  }
+
+  function stopTick() {
+    if (!tickRunning) return;
+    tickRunning = false;
+    cancelAnimationFrame(tickRafId);
+    tickRafId = 0;
+  }
+
+  function syncTickState() {
+    if (isCoarsePointer || document.hidden) stopTick();
+    else startTick();
+  }
+
+  document.addEventListener('visibilitychange', syncTickState);
+  window.addEventListener('pageshow', syncTickState, { passive: true });
+  window.addEventListener('pagehide', stopTick, { passive: true });
+  syncTickState();
+}
