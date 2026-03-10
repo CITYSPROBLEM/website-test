@@ -3,6 +3,9 @@ const cur  = document.getElementById('cur');
 const ring = document.getElementById('cur-ring');
 const isCoarsePointer = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 const LINK_HOVER_SELECTOR = 'a, button, .player-progress, .player-vol-slider, .player-track-name, .glitch-wrap, .release-card, .featured-link';
+const scheduleNonCritical = window.requestIdleCallback
+  ? fn => window.requestIdleCallback(fn, { timeout: 1200 })
+  : fn => setTimeout(fn, 220);
 let mx = 0, my = 0, rx = 0, ry = 0;
 if (!isCoarsePointer) {
   document.addEventListener('mousemove', e => {
@@ -1250,44 +1253,47 @@ document.addEventListener('click', e => {
 
 /* ── magnetic hover on CTA buttons ─────────────────── */
 if (!isCoarsePointer) {
-  const magnetEls = document.querySelectorAll('.booking-cta, .featured-link');
-  const MAGNET_RADIUS = 80;   /* px — activation distance from element centre */
-  const MAGNET_STRENGTH = 0.35; /* 0-1 — how far the element pulls toward cursor */
+  scheduleNonCritical(() => {
+    const magnetEls = document.querySelectorAll('.booking-cta, .featured-link');
+    const MAGNET_STRENGTH = 0.35; /* 0-1 — how far the element pulls toward cursor */
 
-  magnetEls.forEach(el => {
-    el.style.transition = 'transform .25s ease-out';
+    magnetEls.forEach(el => {
+      el.style.transition = 'transform .25s ease-out';
 
-    el.addEventListener('mousemove', e => {
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top  + rect.height / 2;
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      el.style.transform = `translate(${dx * MAGNET_STRENGTH}px, ${dy * MAGNET_STRENGTH}px)`;
-    });
+      el.addEventListener('mousemove', e => {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top  + rect.height / 2;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+        el.style.transform = `translate(${dx * MAGNET_STRENGTH}px, ${dy * MAGNET_STRENGTH}px)`;
+      });
 
-    el.addEventListener('mouseleave', () => {
-      el.style.transform = '';
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = '';
+      });
     });
   });
 }
 
 /* ── 3D tilt on release cards + featured artwork ──── */
 if (!isCoarsePointer) {
-  function addTiltHover(el, maxDeg = 8) {
-    el.addEventListener('mousemove', e => {
-      const rect = el.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width  - 0.5; /* -0.5 … +0.5 */
-      const y = (e.clientY - rect.top)  / rect.height - 0.5;
-      el.style.transform = `perspective(600px) rotateY(${x * maxDeg}deg) rotateX(${-y * maxDeg}deg)`;
-    });
-    el.addEventListener('mouseleave', () => {
-      el.style.transform = '';
-    });
-  }
-  document.querySelectorAll('.release-card').forEach(c => addTiltHover(c, 8));
-  const featuredWrap = document.querySelector('.featured-artwork-wrap');
-  if (featuredWrap) addTiltHover(featuredWrap, 6);
+  scheduleNonCritical(() => {
+    function addTiltHover(el, maxDeg = 8) {
+      el.addEventListener('mousemove', e => {
+        const rect = el.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width  - 0.5; /* -0.5 … +0.5 */
+        const y = (e.clientY - rect.top)  / rect.height - 0.5;
+        el.style.transform = `perspective(600px) rotateY(${x * maxDeg}deg) rotateX(${-y * maxDeg}deg)`;
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = '';
+      });
+    }
+    document.querySelectorAll('.release-card').forEach(c => addTiltHover(c, 8));
+    const featuredWrap = document.querySelector('.featured-artwork-wrap');
+    if (featuredWrap) addTiltHover(featuredWrap, 6);
+  });
 }
 
 /* cursor ring spring + grain sync loop */
