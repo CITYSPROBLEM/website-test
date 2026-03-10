@@ -1300,6 +1300,14 @@ a:hover .arr { transform: translateX(3px); }
   gap: .5rem;
   text-decoration: none;
 }
+@media (min-width: 769px) {
+  .epk-section .portfolio-grid { align-items: stretch; }
+  .epk-section .portfolio-link-card {
+    height: 100%;
+    justify-content: space-between;
+    min-height: 9.8rem;
+  }
+}
 .portfolio-title {
   font-family: 'Michroma', sans-serif;
   font-size: clamp(.62rem, 1.25vw, .88rem);
