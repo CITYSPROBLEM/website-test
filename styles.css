@@ -918,6 +918,15 @@ a:hover .arr { transform: translateX(3px); }
     0 0 14px rgba(0,212,255,.45),
     0 0 30px rgba(0,212,255,.2);
 }
+
+/* Render-heavy sections are skipped until close to viewport. */
+.featured-release,
+.releases-section,
+.dates-section,
+.portfolio-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 720px;
+}
 .ticker-sep {
   color: rgba(0,212,255,.6);
   font-size: clamp(.5rem, 1.1vw, .7rem);
@@ -1555,4 +1564,28 @@ a:hover .arr { transform: translateX(3px); }
   .visualizer { display: none; }
   .featured-release::before,
   .releases-section::before { filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::after,
+  .grain,
+  .visualizer,
+  .info-section::after,
+  .booking-signal-card::after {
+    display: none !important;
+  }
+  .topbar,
+  .info-section,
+  .player,
+  .portfolio-card,
+  .quote-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .ticker-track,
+  .scroll-arrow,
+  h1,
+  .topbar-flyer {
+    animation: none !important;
+  }
 }
