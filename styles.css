@@ -889,6 +889,7 @@ a:hover .arr { transform: translateX(3px); }
 .ticker-reverse .ticker-track {
   animation: tickerScrollReverse 30s linear infinite;
 }
+.ticker:not(.in-view) .ticker-track { animation-play-state: paused; }
 .ticker:hover .ticker-track { animation-play-state: paused; }
 @keyframes tickerScroll {
   from { transform: translateX(0); }

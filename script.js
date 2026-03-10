@@ -1108,8 +1108,14 @@ function initSectionReveal(sectionId, textSelector) {
 
 /* reveal tickers */
 document.querySelectorAll('.ticker').forEach(t => {
+  let revealed = false;
   const obs = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) { t.classList.add('visible'); obs.disconnect(); }
+    const inView = entries.some(entry => entry.isIntersecting);
+    t.classList.toggle('in-view', inView);
+    if (inView && !revealed) {
+      t.classList.add('visible');
+      revealed = true;
+    }
   }, { threshold: 0 });
   obs.observe(t);
 });
