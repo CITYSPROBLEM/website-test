@@ -108,6 +108,7 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   -webkit-backdrop-filter: blur(14px);
 }
 .topbar-logo {
+  width: auto;
   height: 36px;
   display: block;
   filter: brightness(0) invert(1) opacity(0.96) sepia(0.03);
