@@ -1306,6 +1306,7 @@ a:hover .arr { transform: translateX(3px); }
     --epk-card-w: clamp(260px, 30vw, 390px);
     --epk-gap: calc((100% - (var(--epk-card-w) * 2)) / 3);
     grid-template-columns: var(--epk-gap) var(--epk-card-w) var(--epk-gap) var(--epk-card-w) var(--epk-gap);
+    gap: 0;
     align-items: stretch;
     width: 100%;
     max-width: min(980px, 100%);
