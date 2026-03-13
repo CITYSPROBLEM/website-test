@@ -443,7 +443,7 @@ a:hover .arr { transform: translateX(3px); }
   100% { transform: translateX(0); }
 }
 .player-time-disp {
-  font-size: clamp(.45rem, 1.2vw, .55rem); letter-spacing: .1em; color: rgba(200,230,255,.4);
+  font-size: clamp(.45rem, 1.2vw, .55rem); letter-spacing: .1em; color: rgba(200,230,255,.68);
   flex-shrink: 0; user-select: none;
 }
 .player-progress {
@@ -464,7 +464,7 @@ a:hover .arr { transform: translateX(3px); }
   background: none; border: none;
   font-family: 'Michroma', sans-serif;
   font-size: clamp(.65rem, 1.8vw, .85rem); letter-spacing: 0;
-  color: rgba(200,230,255,.5);
+  color: rgba(200,230,255,.74);
   display: inline-flex; align-items: center; justify-content: center;
   line-height: 1; padding: 0 .6rem;
   cursor: none; transition: color .2s; user-select: none;
@@ -667,7 +667,7 @@ a:hover .arr { transform: translateX(3px); }
 /* ── track counter ────────────────────────────────── */
 .player-counter {
   font-size: .5rem; letter-spacing: .1em;
-  color: rgba(200,230,255,.3);
+  color: rgba(200,230,255,.62);
   flex-shrink: 0; user-select: none; white-space: nowrap;
 }
 .bio-panel-title {
@@ -996,7 +996,7 @@ a:hover .arr { transform: translateX(3px); }
   font-family: 'Michroma', sans-serif;
   font-size: clamp(.5rem, 1.2vw, .65rem);
   letter-spacing: .2em;
-  color: rgba(200,230,255,.35);
+  color: rgba(200,230,255,.62);
   white-space: nowrap;
 }
 .featured-link {
@@ -1086,7 +1086,7 @@ a:hover .arr { transform: translateX(3px); }
   font-family: 'Michroma', sans-serif;
   font-size: clamp(.45rem, 1vw, .55rem);
   letter-spacing: .12em;
-  color: rgba(200,230,255,.45);
+  color: rgba(200,230,255,.68);
   margin-top: .3rem;
   white-space: nowrap;
 }
@@ -1239,6 +1239,10 @@ a:hover .arr { transform: translateX(3px); }
   color: var(--ice);
   text-shadow: 0 0 10px rgba(0,212,255,.25);
 }
+#datesSection .dates-empty {
+  color: var(--text);
+  text-shadow: none;
+}
 .past-shows-year-btn::after {
   content: '+';
   position: absolute;
@@ -1278,7 +1282,7 @@ a:hover .arr { transform: translateX(3px); }
   font-size: clamp(.5rem, 1.2vw, .62rem);
   letter-spacing: .18em;
   text-transform: uppercase;
-  color: rgba(200,230,255,.42);
+  color: rgba(200,230,255,.68);
   text-shadow: 0 0 10px rgba(0,212,255,.18);
   transition: color .25s ease;
 }
@@ -1339,7 +1343,7 @@ a:hover .arr { transform: translateX(3px); }
   font-family: 'Michroma', sans-serif;
   font-size: clamp(.46rem, .95vw, .58rem);
   letter-spacing: .15em;
-  color: rgba(183, 214, 236, .66);
+  color: rgba(183, 214, 236, .84);
   line-height: 1.7;
 }
 .portfolio-link {
