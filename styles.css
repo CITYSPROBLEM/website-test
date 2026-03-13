@@ -624,6 +624,7 @@ a:hover .arr { transform: translateX(3px); }
   }
   .player-time-disp { font-size: .45rem; }
   #playerTimeTotal { display: none; }
+  .tap-hint { display: none; }
   .player-progress {
     position: absolute;
     top: 0; left: 0; right: 0;
