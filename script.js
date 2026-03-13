@@ -68,15 +68,20 @@ function accordionScrambleLimit(text) {
   return Math.min(total, Math.max(8, Math.min(16, Math.floor(total * 0.28))));
 }
 
+function fixedLen(text, len) {
+  return text.length === len ? text : text.slice(0, len).padEnd(len, ' ');
+}
+
 function scrambleLoop(original, setText, stepMs = 25, maxChars = Infinity) {
   const plan = scramblePlan(original, maxChars);
+  const originalLen = original.length;
   let rafId, last = 0;
   function frame(ts) {
     if (ts - last >= stepMs) {
       last = ts;
-      setText(original.split('').map((c, i) =>
+      setText(fixedLen(original.split('').map((c, i) =>
         c === ' ' || !plan.ranks.has(i) ? c : randGlyph(c)
-      ).join(''));
+      ).join(''), originalLen));
     }
     rafId = requestAnimationFrame(frame);
   }
@@ -86,6 +91,7 @@ function scrambleLoop(original, setText, stepMs = 25, maxChars = Infinity) {
 
 function scrambleResolve(original, setText, steps = 16, stepMs = 25, onComplete, maxChars = Infinity) {
   const plan = scramblePlan(original, maxChars);
+  const originalLen = original.length;
   let step = 0, last = 0, rafId;
   /* starts at stepMs (full speed), slows quadratically to ~2× at the last step */
   function stepDelay(s) { return stepMs * (1 + Math.pow(s / steps, 2)); }
@@ -93,11 +99,11 @@ function scrambleResolve(original, setText, steps = 16, stepMs = 25, onComplete,
     if (ts - last >= stepDelay(step)) {
       last = ts;
       const resolvedCount = Math.floor((step / steps) * plan.count);
-      setText(original.split('').map((c, i) => {
+      setText(fixedLen(original.split('').map((c, i) => {
         if (c === ' ') return ' ';
         if (!plan.ranks.has(i) || plan.ranks.get(i) < resolvedCount) return c;
         return randGlyph(c);
-      }).join(''));
+      }).join(''), originalLen));
       if (++step > steps) { setText(original); onComplete?.(); return; }
     }
     rafId = requestAnimationFrame(frame);
