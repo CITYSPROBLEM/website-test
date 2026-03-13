@@ -45,19 +45,19 @@ function nonSpaceCharCount(text) {
 
 function bracketMask(text) {
   const mask = new Array(text.length).fill(false);
-  const openToClose = { '(': ')', '[': ']', '{': '}' };
-  const closers = new Set(Object.values(openToClose));
+  const openToClose = { '(': ')', '[': ']', '{': '}', '<': '>' };
   const stack = [];
   const chars = text.split('');
   chars.forEach((c, i) => {
     if (openToClose[c]) {
-      mask[i] = true;
-      stack.push(openToClose[c]);
+      stack.push({ close: openToClose[c], idx: i });
       return;
     }
-    if (stack.length) mask[i] = true;
-    if (closers.has(c) && stack.length && c === stack[stack.length - 1]) {
-      stack.pop();
+    if (!stack.length) return;
+    const top = stack[stack.length - 1];
+    if (c === top.close) {
+      const open = stack.pop();
+      for (let n = open.idx; n <= i; n++) mask[n] = true;
     }
   });
   return mask;
