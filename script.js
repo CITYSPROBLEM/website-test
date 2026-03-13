@@ -93,6 +93,13 @@ function fixedLen(text, len) {
   return text.length === len ? text : text.slice(0, len).padEnd(len, ' ');
 }
 
+function scrambleSnapshot(original) {
+  return fixedLen(
+    original.split('').map(c => (c === ' ' ? ' ' : randGlyph(c))).join(''),
+    original.length
+  );
+}
+
 function scrambleLoop(original, setText, stepMs = 25, maxChars = Infinity) {
   const plan = scramblePlan(original, maxChars);
   const originalLen = original.length;
@@ -269,7 +276,7 @@ if (isCoarsePointer) {
   let burstTicks = 0;
   const burst = setInterval(() => {
     if (h1FadeUpDone) { clearInterval(burst); return; }
-    h1El.textContent = h1Orig.split('').map(c => (c === ' ' ? ' ' : randGlyph(c))).join('');
+    h1El.textContent = scrambleSnapshot(h1Orig);
     applyH1Centering();
     if (++burstTicks >= 14) clearInterval(burst);
   }, 45);
