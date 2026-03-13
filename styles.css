@@ -1216,6 +1216,18 @@ a:hover .arr { transform: translateX(3px); }
   white-space: nowrap;
   border-bottom: 1px solid rgba(0,212,255,.22);
 }
+
+/* match dates section headings/empty state visibility to past-show year buttons */
+#datesSection .section-label,
+#pastShowsSection .section-label,
+#featuredRelease .section-label,
+#releasesSection .section-label,
+#bookingSection .section-label,
+#newsletterSection .section-label,
+#datesSection .dates-empty {
+  color: var(--ice);
+  text-shadow: 0 0 10px rgba(0,212,255,.25);
+}
 .past-shows-year-btn::after {
   content: '+';
   position: absolute;
