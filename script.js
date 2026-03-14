@@ -419,8 +419,9 @@ function positionScrollArrow() {
 }
 document.fonts.ready.then(positionScrollArrow);
 window.addEventListener('resize', positionScrollArrow);
-/* re-position after h1 fadeUp animation completes (0.2s delay + 0.9s duration) */
-setTimeout(positionScrollArrow, 1200);
+/* re-position once h1 fadeUp animation finishes (final resting position) */
+h1El.addEventListener('animationend', positionScrollArrow);
+window.addEventListener('load', positionScrollArrow);
 
 /* ── audio player — tracks sourced from SONGS/tracks.js ─────────── */
 const audio       = document.getElementById('audio');
