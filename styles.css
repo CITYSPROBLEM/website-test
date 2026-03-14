@@ -872,7 +872,7 @@ a:hover .arr { transform: translateX(3px); }
   align-items: center;
   justify-content: center;
   width: min(500px, 80vw);
-  margin: calc((100vh - 72px - var(--player-h, 56px)) / 2) auto;
+  margin: 0 auto;
   gap: 0;
   opacity: .45;
 }
@@ -898,18 +898,7 @@ a:hover .arr { transform: translateX(3px); }
 
 /* ── full-viewport section spacing + scroll-snap ─── */
 .featured-release,
-.portfolio-section {
-  min-height: calc(100vh - 72px - var(--player-h, 56px));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  scroll-snap-align: center;
-}
-.releases-section {
-  margin-top: clamp(4rem, 10vh, 8rem);
-  scroll-snap-align: center;
-}
+.portfolio-section,
 .info-wrap,
 .dates-wrap {
   min-height: calc(100vh - 72px - var(--player-h, 56px));
@@ -917,7 +906,17 @@ a:hover .arr { transform: translateX(3px); }
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  scroll-snap-align: center;
+  margin-top: clamp(3rem, 6vh, 5rem);
+  margin-bottom: clamp(3rem, 6vh, 5rem);
+}
+.info-wrap,
+.dates-wrap {
   width: 100%;
+}
+.releases-section {
+  margin-top: clamp(4rem, 10vh, 8rem);
+  margin-bottom: clamp(3rem, 6vh, 5rem);
   scroll-snap-align: center;
 }
 
