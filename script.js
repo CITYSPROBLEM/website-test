@@ -410,13 +410,17 @@ const scrollArrowEl = document.querySelector('.scroll-arrow');
 const topbarEl = document.querySelector('.topbar');
 const mainEl = document.querySelector('main');
 const pastShowsSection = document.getElementById('pastShowsSection');
+let arrowBaseTop = null;
 function positionScrollArrow() {
-  const h1Bottom  = h1El.getBoundingClientRect().bottom;
-  const playerTop = playerEl.getBoundingClientRect().top;
-  scrollArrowEl.style.top = ((h1Bottom + playerTop) / 2 - 7) + 'px';
+  const h1Bottom  = h1El.getBoundingClientRect().bottom + window.scrollY;
+  const playerTop = playerEl.getBoundingClientRect().top + window.scrollY;
+  arrowBaseTop = (h1Bottom + playerTop) / 2 - 7;
+  scrollArrowEl.style.top = (arrowBaseTop - window.scrollY) + 'px';
 }
 document.fonts.ready.then(positionScrollArrow);
 window.addEventListener('resize', positionScrollArrow);
+/* re-position after h1 fadeUp animation completes (0.2s delay + 0.9s duration) */
+setTimeout(positionScrollArrow, 1200);
 
 /* ── audio player — tracks sourced from SONGS/tracks.js ─────────── */
 const audio       = document.getElementById('audio');
@@ -666,14 +670,12 @@ window.addEventListener('resize', () => {
   };
 }
 
-/* hide scroll arrow once user has scrolled past the hero */
-let scrollArrowHidden = null;
-scrollArrowEl.style.transition = 'opacity .4s ease';
+/* scroll arrow follows h1 off screen as user scrolls */
 window.addEventListener('scroll', () => {
-  const hidden = window.scrollY > 80;
-  if (hidden === scrollArrowHidden) return;
-  scrollArrowHidden = hidden;
-  scrollArrowEl.style.opacity = hidden ? '0' : '';
+  if (arrowBaseTop === null) return;
+  const y = arrowBaseTop - window.scrollY;
+  scrollArrowEl.style.top = y + 'px';
+  scrollArrowEl.style.opacity = y < -20 ? '0' : '';
 }, { passive: true });
 
 let topbarPushStartScroll = 0;
@@ -1131,6 +1133,28 @@ const infoSectionEls = new Set(infoSection.querySelectorAll('.bio-panel-label, .
   ...Array.from(document.querySelectorAll('.bio-press-links a')).filter(el => !infoSectionEls.has(el)),
   /* corner close button */
 ].forEach(addScrambleHover);
+
+/* hover-scramble for info section accordion headers —
+   hover target is .info-block-header, text lives in child .bio-panel-label */
+infoSection.querySelectorAll('.info-block-header').forEach(header => {
+  const label = header.querySelector('.bio-panel-label');
+  if (!label) return;
+  const orig = label.textContent;
+  let cancelScramble = null, cancelResolve = null, unlockWidth = null;
+  header.addEventListener('mouseenter', () => {
+    cancelResolve?.(); cancelResolve = null;
+    unlockWidth?.(); unlockWidth = null;
+    unlockWidth = lockBracketTextWidth(label, orig);
+    cancelScramble?.();
+    cancelScramble = scrambleLoop(orig, t => { label.textContent = t; }, 30);
+  });
+  header.addEventListener('mouseleave', () => {
+    cancelScramble?.(); cancelScramble = null;
+    cancelResolve = scrambleResolve(orig, t => { label.textContent = t; }, ...settleParams(orig), () => {
+      unlockWidth?.(); unlockWidth = null;
+    });
+  });
+});
 
 /* ── generic section reveal with scramble-settle ───────────────── */
 function initSectionReveal(sectionId, textSelector) {
