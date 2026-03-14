@@ -725,22 +725,25 @@ a:hover .arr { transform: translateX(3px); }
   width: 100%;
   box-sizing: border-box;
   display: flex;
+  flex-direction: row;
   flex-wrap: nowrap;
-  gap: .5rem;
+  gap: 1rem;
   padding: 0 clamp(1rem, 3vw, 1.4rem);
   margin-top: .35rem;
-  justify-content: space-between;
+  justify-content: center;
 }
 .connect-links:first-of-type { margin-top: 0; }
-.connect-links a {
-  flex: 1 1 0;
+.info-section .connect-links a {
+  flex: 0 0 auto;
+  width: auto !important;
   min-width: 0;
   max-width: none;
-  padding: .38rem .65rem;
-  font-size: clamp(.44rem, .95vw, .58rem);
+  padding: .75rem 1.5rem;
+  font-size: clamp(.55rem, 1.2vw, .72rem);
   letter-spacing: .08em;
   text-transform: uppercase;
   justify-content: center;
+  text-align: center;
 }
 /* ── label releases ──────────────────────────────── */
 .label-releases {
