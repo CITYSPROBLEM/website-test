@@ -154,7 +154,7 @@ main {
   align-items: center;
   padding: 72px clamp(1rem, 4vw, 3rem) clamp(3rem, 5vw, 6rem);
   text-align: center;
-  overflow-x: clip;
+  overflow-x: hidden;
 }
 main::after {
   content: '';
@@ -556,6 +556,7 @@ a:hover .arr { transform: translateX(3px); }
 
   main {
     padding: 72px 1.25rem 4rem;
+    overflow-y: auto;
   }
   .hero {
     min-height: calc(100dvh - 72px);
@@ -916,12 +917,7 @@ a:hover .arr { transform: translateX(3px); }
   padding: 1.4rem 0;
   border-top: 1px solid rgba(0,212,255,.14);
   border-bottom: 1px solid rgba(0,212,255,.14);
-  position: sticky;
-  top: 72px;
-  z-index: 100;
-  background: rgba(4,6,15,.95);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  position: relative;
   opacity: 0;
 }
 .ticker::before {
