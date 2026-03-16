@@ -951,7 +951,9 @@ a:hover .arr { transform: translateX(3px); }
 .featured-wrap {
   justify-content: flex-start;
   position: relative;
-  padding-top: 3rem;
+  padding-top: 0;
+  scroll-snap-align: start;
+  scroll-margin-top: 72px;
 }
 .featured-wrap > .ticker {
   flex-shrink: 0;
