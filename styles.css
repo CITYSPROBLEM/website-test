@@ -89,6 +89,13 @@ html.page-subpage {
 html.page-subpage main {
   padding-top: 80px;
 }
+/* music page: pull ticker flush against topbar bottom */
+html.page-music main {
+  padding-top: 72px;
+}
+html.page-music .featured-wrap > .ticker:first-child {
+  border-top: none;
+}
 .info-section[hidden] { display: none; }
 html.page-subpage .featured-wrap,
 html.page-subpage .releases-section,
