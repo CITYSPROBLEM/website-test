@@ -1,3 +1,16 @@
+/* splash screen */
+(function() {
+  const splash = document.getElementById('splash');
+  if (!splash) return;
+  document.documentElement.classList.add('splash-active');
+  splash.addEventListener('click', function dismiss() {
+    splash.removeEventListener('click', dismiss);
+    splash.classList.add('dismissed');
+    document.documentElement.classList.remove('splash-active');
+    splash.addEventListener('transitionend', () => splash.remove());
+  });
+})();
+
 /* cursor */
 const cur  = document.getElementById('cur');
 const ring = document.getElementById('cur-ring');

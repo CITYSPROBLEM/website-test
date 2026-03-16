@@ -1,5 +1,42 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; cursor: none !important; }
 
+/* splash screen */
+.splash {
+  position: fixed; inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer !important;
+  transition: opacity .6s ease, visibility .6s ease;
+}
+.splash.dismissed {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.splash-logo {
+  width: clamp(120px, 30vw, 280px);
+  height: auto;
+  filter: brightness(0) invert(1);
+  cursor: pointer !important;
+  animation: splashPulse 2.5s ease-in-out infinite;
+}
+@keyframes splashPulse {
+  0%, 100% { opacity: .85; filter: brightness(0) invert(1) drop-shadow(0 0 0px transparent); }
+  50%      { opacity: 1;   filter: brightness(0) invert(1) drop-shadow(0 0 20px rgba(0,212,255,.4)); }
+}
+/* pause all site animations while splash is visible */
+.splash-active, .splash-active * {
+  animation-play-state: paused !important;
+}
+/* exempt the splash itself */
+.splash-active .splash,
+.splash-active .splash * {
+  animation-play-state: running !important;
+}
+/* hide overflow while splash is up */
+html.splash-active { overflow: hidden; }
+
 :root {
   --text: #e0eaf8;
   --ice: #00d4ff;
