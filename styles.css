@@ -948,6 +948,9 @@ a:hover .arr { transform: translateX(3px); }
   scroll-snap-align: center;
   width: 100%;
 }
+.featured-wrap {
+  justify-content: flex-start;
+}
 .featured-wrap .featured-release {
   flex: 1;
   display: flex;
