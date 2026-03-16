@@ -291,6 +291,8 @@ function addScrambleHover(el) {
 
 /* h1 scramble + chromatic aberration */
 const h1El   = document.querySelector('h1');
+const homeHeroEl = document.querySelector('.hero');
+const topbarNavEl = document.querySelector('.topbar-nav');
 const h1Orig = 'CITYSPROBLEM';
 let cancelH1;
 let h1FadeUpDone = !h1El;
@@ -341,6 +343,10 @@ if (h1El) {
 const h1GlowFadeName = document.documentElement.classList.contains('is-safari') ? 'glowFadeIn-safari' : 'glowFadeIn';
 const h1GlowPulseName = document.documentElement.classList.contains('is-safari') ? 'glowPulse-safari' : 'glowPulse';
 splashReady.then(() => {
+if (homeHeroEl && topbarNavEl && !document.documentElement.classList.contains('page-subpage')) {
+  if (!homeHeroEl.contains(topbarNavEl)) homeHeroEl.appendChild(topbarNavEl);
+  topbarNavEl.classList.add('hero-nav-unit');
+}
 if (isCoarsePointer) {
   /* deterministic mobile intro: short timed scramble burst, then hard settle */
   let burstTicks = 0;
