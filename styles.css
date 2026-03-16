@@ -18,21 +18,21 @@
   height: auto;
   opacity: 0;
   cursor: none !important;
-  filter: brightness(0) invert(1) brightness(0.961);
+  filter: brightness(0.961);
   animation: splashFadeIn 1.2s .2s ease forwards, splashPulse 2.5s 1.4s ease-in-out infinite;
   transition: filter .3s ease;
 }
 .splash-logo:hover {
   animation-play-state: running, paused;
-  filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 12px rgba(0,212,255,.25));
+  filter: brightness(0.961) drop-shadow(0 0 12px rgba(0,212,255,.25));
 }
 @keyframes splashFadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 @keyframes splashPulse {
-  0%, 100% { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 0px transparent); }
-  50%      { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 12px rgba(0,212,255,.25)); }
+  0%, 100% { filter: brightness(0.961) drop-shadow(0 0 0px transparent); }
+  50%      { filter: brightness(0.961) drop-shadow(0 0 12px rgba(0,212,255,.25)); }
 }
 /* suppress all site animations while splash is visible */
 .splash-active h1,
