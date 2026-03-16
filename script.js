@@ -1,12 +1,17 @@
-/* splash screen */
+/* splash screen — only shows once per session */
 const splashReady = (function() {
   const splash = document.getElementById('splash');
   if (!splash) return Promise.resolve();
+  if (sessionStorage.getItem('splashDismissed')) {
+    splash.remove();
+    return Promise.resolve();
+  }
   document.documentElement.classList.add('splash-active');
   const splashLogo = splash.querySelector('.splash-logo');
   return new Promise(resolve => {
     splashLogo.addEventListener('click', function dismiss() {
       splashLogo.removeEventListener('click', dismiss);
+      sessionStorage.setItem('splashDismissed', '1');
       splash.classList.add('dismissed');
       document.documentElement.classList.remove('splash-active');
       /* fade in topbar */
@@ -138,7 +143,7 @@ function scrambleSnapshot(original) {
   );
 }
 
-function scrambleLoop(original, setText, stepMs = 25, maxChars = Infinity) {
+function scrambleLoop(original, setText, stepMs = 50, maxChars = Infinity) {
   const plan = scramblePlan(original, maxChars);
   const originalLen = original.length;
   let rafId, last = 0;
@@ -155,7 +160,7 @@ function scrambleLoop(original, setText, stepMs = 25, maxChars = Infinity) {
   return () => cancelAnimationFrame(rafId);
 }
 
-function scrambleResolve(original, setText, steps = 16, stepMs = 25, onComplete, maxChars = Infinity) {
+function scrambleResolve(original, setText, steps = 16, stepMs = 50, onComplete, maxChars = Infinity) {
   const plan = scramblePlan(original, maxChars);
   const originalLen = original.length;
   let step = 0, last = 0, rafId;
