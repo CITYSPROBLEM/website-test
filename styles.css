@@ -93,9 +93,6 @@ html.page-subpage main {
 html.page-music main {
   padding-top: 72px;
 }
-html.page-music .featured-wrap > .ticker:first-child {
-  border-top: none;
-}
 .info-section[hidden] { display: none; }
 html.page-subpage .featured-wrap,
 html.page-subpage .releases-section,
