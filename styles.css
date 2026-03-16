@@ -1169,6 +1169,7 @@ a:hover .arr { transform: translateX(3px); }
   max-width: min(1000px, 92vw);
   padding: clamp(2rem, 4vw, 4rem) clamp(1rem, 3vw, 2rem) clamp(2.5rem, 5vw, 5rem);
   opacity: 0;
+  align-items: stretch;
 }
 .releases-section.visible { animation: fadeUp .9s ease forwards; }
 .release-grid {
