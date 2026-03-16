@@ -89,9 +89,16 @@ html.page-subpage {
 html.page-subpage main {
   padding-top: 80px;
 }
-/* music page: pull ticker flush against topbar bottom */
+/* music page: pull ticker flush against topbar bottom / player top */
 html.page-music main {
   padding-top: 72px;
+  padding-bottom: var(--player-h, 56px);
+}
+html.page-music .releases-section {
+  min-height: calc(100vh - 72px - var(--player-h, 56px) - var(--ticker-h, 3.8rem));
+}
+html.page-music main::after {
+  display: none;
 }
 .info-section[hidden] { display: none; }
 html.page-subpage .featured-wrap,

@@ -640,6 +640,11 @@ function syncPlayerWidth() {
   }
   playerEl.style.setProperty('--player-content-w', w + 'px');
   document.documentElement.style.setProperty('--player-h', playerEl.offsetHeight + 'px');
+  /* measure bottom ticker for music page layout */
+  const bottomTicker = document.querySelector('main > .ticker');
+  if (bottomTicker) {
+    document.documentElement.style.setProperty('--ticker-h', bottomTicker.offsetHeight + 'px');
+  }
   syncCenterScrollSpacer();
 }
 document.fonts.ready.then(syncPlayerWidth);
