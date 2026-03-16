@@ -37,13 +37,15 @@
 /* suppress all site animations while splash is visible */
 .splash-active h1,
 .splash-active .player,
-.splash-active .topbar-flyer {
+.splash-active .topbar-flyer,
+.splash-active .ticker {
   animation: none !important;
 }
 .splash-active h1,
 .splash-active .topbar,
 .splash-active .player,
-.splash-active .scroll-arrow {
+.splash-active .scroll-arrow,
+.splash-active .ticker {
   opacity: 0 !important;
   transition: none !important;
 }
