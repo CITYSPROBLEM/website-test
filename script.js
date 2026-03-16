@@ -487,10 +487,11 @@ const mainEl = document.querySelector('main');
 const pastShowsSection = document.getElementById('pastShowsSection');
 let arrowBaseTop = null;
 function positionScrollArrow() {
-  if (!h1El || !scrollArrowEl) return;
+  if (!h1El || !scrollArrowEl || !playerEl) return;
   const h1Bottom  = h1El.getBoundingClientRect().bottom + window.scrollY;
   const playerTop = playerEl.getBoundingClientRect().top + window.scrollY;
-  arrowBaseTop = (h1Bottom + playerTop) / 2 - 7;
+  const arrowHalf = (scrollArrowEl.offsetHeight || 14) / 2;
+  arrowBaseTop = (h1Bottom + playerTop) / 2 - arrowHalf;
   scrollArrowEl.style.top = (arrowBaseTop - window.scrollY) + 'px';
 }
 if (h1El && scrollArrowEl) {
@@ -661,6 +662,7 @@ function syncPlayerWidth() {
     document.documentElement.style.setProperty('--ticker-h', bottomTicker.offsetHeight + 'px');
   }
   syncCenterScrollSpacer();
+  positionScrollArrow();
 }
 document.fonts.ready.then(syncPlayerWidth);
 let resizePlayerTimer;
