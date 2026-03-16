@@ -41,6 +41,7 @@ const splashReady = (function() {
 const cur  = document.getElementById('cur');
 const ring = document.getElementById('cur-ring');
 const isCoarsePointer = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+const isSafari = document.documentElement.classList.contains('is-safari');
 const LINK_HOVER_SELECTOR = 'a, button, .topbar-logo, .player-progress, .player-vol-slider, .player-track-name, .glitch-wrap, .release-card, .featured-link';
 const scheduleNonCritical = window.requestIdleCallback
   ? fn => window.requestIdleCallback(fn, { timeout: 1200 })
@@ -408,7 +409,7 @@ if (!isCoarsePointer) {
 {
   const auroraEl = document.querySelector('.aurora');
   const heroEl = document.querySelector('.hero');
-  if (auroraEl && heroEl && !isCoarsePointer) {
+  if (auroraEl && heroEl && !isCoarsePointer && !isSafari) {
     let ax = 0, ay = 0, targetAx = 0, targetAy = 0;
     let auroraRafId = 0;
     let auroraRunning = false;
@@ -1411,7 +1412,7 @@ document.addEventListener('click', e => {
 });
 
 /* ── magnetic hover on CTA buttons ─────────────────── */
-if (!isCoarsePointer) {
+if (!isCoarsePointer && !isSafari) {
   scheduleNonCritical(() => {
     const magnetEls = document.querySelectorAll('.booking-cta, .featured-link');
     const MAGNET_STRENGTH = 0.35; /* 0-1 — how far the element pulls toward cursor */
@@ -1436,7 +1437,7 @@ if (!isCoarsePointer) {
 }
 
 /* ── 3D tilt on release cards + featured artwork ──── */
-if (!isCoarsePointer) {
+if (!isCoarsePointer && !isSafari) {
   scheduleNonCritical(() => {
     function addTiltHover(el, maxDeg = 8) {
       el.addEventListener('mousemove', e => {
@@ -1462,9 +1463,11 @@ if (!isCoarsePointer) {
 
   function tick() {
     if (!tickRunning) return;
-    rx += (mx - rx) * .25; ry += (my - ry) * .25;
-    ring.style.transform = `translate(${rx}px,${ry}px)`;
-    if (++grainFrame % 6 === 0)
+    if (!isSafari) {
+      rx += (mx - rx) * .25; ry += (my - ry) * .25;
+      ring.style.transform = `translate(${rx}px,${ry}px)`;
+    }
+    if (!isSafari && ++grainFrame % 6 === 0)
       turbEl.setAttribute('seed', (noiseSeed = (noiseSeed + 1) % 200));
     if (window.shouldDrawVisualizer?.()) window.drawVisualizer();
     tickRafId = requestAnimationFrame(tick);

@@ -2086,3 +2086,31 @@ a:hover .arr { transform: translateX(3px); }
   filter: blur(50px);
   opacity: .6;
 }
+
+/* --- Safari performance mode (compositor-heavy effects) --- */
+.is-safari .grain {
+  display: none;
+}
+.is-safari .topbar,
+.is-safari .info-section,
+.is-safari .player,
+.is-safari .portfolio-card,
+.is-safari .quote-card {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.is-safari #cur-ring {
+  display: none;
+}
+.is-safari .aurora {
+  filter: blur(28px);
+  opacity: .38;
+}
+.is-safari .featured-release::before {
+  filter: blur(36px);
+  opacity: .45;
+}
+.is-safari .releases-section::before {
+  filter: blur(30px);
+  opacity: .45;
+}
