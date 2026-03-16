@@ -23,8 +23,8 @@
   transition: filter .3s ease;
 }
 .splash-logo:hover {
-  animation: splashFadeIn 1.2s .2s ease forwards;
-  filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 14px rgba(0,212,255,.3));
+  animation-play-state: running, paused;
+  filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 12px rgba(0,212,255,.25));
 }
 @keyframes splashFadeIn {
   from { opacity: 0; }
@@ -32,7 +32,7 @@
 }
 @keyframes splashPulse {
   0%, 100% { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 0px transparent); }
-  50%      { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 14px rgba(0,212,255,.3)); }
+  50%      { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 12px rgba(0,212,255,.25)); }
 }
 /* suppress all site animations while splash is visible */
 .splash-active h1,
@@ -305,7 +305,7 @@ a.date-row::before { display: none; }
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  text-shadow: 0 0 18px rgba(0,212,255,.35), 0 0 40px rgba(0,212,255,.15);
+  text-shadow: 0 0 12px rgba(0,212,255,.2), 0 0 30px rgba(0,212,255,.08);
   /* transition handled by JS */
 }
 
@@ -474,11 +474,11 @@ h1 {
 }
 @keyframes glowFadeIn {
   from { text-shadow: none; }
-  to   { text-shadow: 0 0 18px rgba(0,212,255,.35), 0 0 40px rgba(0,212,255,.15); }
+  to   { text-shadow: 0 0 12px rgba(0,212,255,.2), 0 0 30px rgba(0,212,255,.08); }
 }
 @keyframes glowPulse {
-  0%, 100% { text-shadow: 0 0 18px rgba(0,212,255,.35), 0 0 40px rgba(0,212,255,.15); }
-  50%       { text-shadow: 0 0 28px rgba(0,212,255,.7), 0 0 60px rgba(0,212,255,.3), 0 0 100px rgba(124,58,237,.2); }
+  0%, 100% { text-shadow: 0 0 12px rgba(0,212,255,.2), 0 0 30px rgba(0,212,255,.08); }
+  50%       { text-shadow: 0 0 20px rgba(0,212,255,.45), 0 0 45px rgba(0,212,255,.15), 0 0 80px rgba(124,58,237,.1); }
 }
 
 /* chromatic aberration on h1 hover */
@@ -486,7 +486,7 @@ h1 {
   0%   { text-shadow: -6px 0 0 rgba(255,0,80,.75), 6px 0 0 rgba(0,212,255,.75); }
   30%  { text-shadow: -4px 0 0 rgba(255,0,80,.5),  4px 0 0 rgba(167,139,250,.5); }
   60%  { text-shadow: -2px 0 0 rgba(255,0,80,.3),  2px 0 0 rgba(0,212,255,.3); }
-  100% { text-shadow: 0 0 18px rgba(0,212,255,.35), 0 0 40px rgba(0,212,255,.15); }
+  100% { text-shadow: 0 0 12px rgba(0,212,255,.2), 0 0 30px rgba(0,212,255,.08); }
 }
 h1.chroma {
   opacity: 1 !important;
