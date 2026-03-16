@@ -29,14 +29,11 @@
   0%, 100% { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 0px transparent); }
   50%      { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 20px rgba(0,212,255,.4)); }
 }
-/* pause all site animations while splash is visible */
-.splash-active, .splash-active * {
-  animation-play-state: paused !important;
-}
-/* exempt the splash itself */
-.splash-active .splash,
-.splash-active .splash * {
-  animation-play-state: running !important;
+/* suppress all site animations while splash is visible */
+.splash-active h1,
+.splash-active .player,
+.splash-active .topbar-flyer {
+  animation: none !important;
 }
 /* hide overflow while splash is up */
 html.splash-active { overflow: hidden; }
