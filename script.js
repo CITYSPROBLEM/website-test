@@ -56,7 +56,6 @@ let mx = 0, my = 0, rx = 0, ry = 0;
 if (!isCoarsePointer) {
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
-    cur.style.transform = `translate(${mx}px,${my}px)`;
   });
   document.addEventListener('mouseover', e => {
     if (!(e.target instanceof Element)) return;
@@ -420,13 +419,17 @@ if (!isCoarsePointer) {
     let auroraRafId = 0;
     let auroraRunning = false;
     let heroVisible = true;
+    let heroRect = heroEl.getBoundingClientRect();
+
+    function updateHeroRect() {
+      heroRect = heroEl.getBoundingClientRect();
+    }
 
     document.addEventListener('mousemove', e => {
       if (!auroraRunning) return;
-      const rect = heroEl.getBoundingClientRect();
       /* normalise cursor to -1…+1 relative to hero centre */
-      targetAx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      targetAy = ((e.clientY - rect.top)  / rect.height - 0.5) * 2;
+      targetAx = ((e.clientX - heroRect.left) / heroRect.width - 0.5) * 2;
+      targetAy = ((e.clientY - heroRect.top)  / heroRect.height - 0.5) * 2;
     });
 
     function auroraFrame() {
@@ -467,8 +470,11 @@ if (!isCoarsePointer) {
     heroObserver.observe(heroEl);
 
     document.addEventListener('visibilitychange', syncAuroraState);
+    window.addEventListener('resize', updateHeroRect, { passive: true });
+    window.addEventListener('scroll', updateHeroRect, { passive: true });
     window.addEventListener('pageshow', syncAuroraState, { passive: true });
     window.addEventListener('pagehide', stopAurora, { passive: true });
+    updateHeroRect();
     syncAuroraState();
   }
 }
@@ -719,10 +725,10 @@ window.addEventListener('resize', () => {
   audio.addEventListener('play', initAudioContext, { once: true });
 
   function resizeViz() {
-    const dpr = window.devicePixelRatio || 1;
-    vizCanvas.width  = vizCanvas.clientWidth  * dpr;
-    vizCanvas.height = vizCanvas.clientHeight * dpr;
-    vizCtx.scale(dpr, dpr);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    vizCanvas.width  = Math.max(1, Math.floor(vizCanvas.clientWidth  * dpr));
+    vizCanvas.height = Math.max(1, Math.floor(vizCanvas.clientHeight * dpr));
+    vizCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   resizeViz();
   window.addEventListener('resize', resizeViz);
@@ -763,12 +769,20 @@ window.addEventListener('resize', () => {
 
 /* scroll arrow follows h1 off screen as user scrolls */
 if (scrollArrowEl) {
-  window.addEventListener('scroll', () => {
+  let arrowRafPending = false;
+  function updateArrowPosition() {
+    arrowRafPending = false;
     if (arrowBaseTop === null) return;
     const y = arrowBaseTop - window.scrollY;
     scrollArrowEl.style.top = y + 'px';
     scrollArrowEl.style.opacity = y < -20 ? '0' : '';
+  }
+  window.addEventListener('scroll', () => {
+    if (arrowRafPending) return;
+    arrowRafPending = true;
+    requestAnimationFrame(updateArrowPosition);
   }, { passive: true });
+  window.addEventListener('resize', updateArrowPosition, { passive: true });
 }
 
 let topbarPushStartScroll = 0;
@@ -1473,6 +1487,7 @@ if (enableHeavyPointerFx) {
   function tick() {
     if (!tickRunning) return;
     if (!isCoarsePointer) {
+      cur.style.transform = `translate(${mx}px,${my}px)`;
       rx += (mx - rx) * .25; ry += (my - ry) * .25;
       ring.style.transform = `translate(${rx}px,${ry}px)`;
     }
