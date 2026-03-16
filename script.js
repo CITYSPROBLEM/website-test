@@ -332,6 +332,8 @@ function h1Settle() {
 }
 
 if (h1El) {
+const h1GlowFadeName = document.documentElement.classList.contains('is-safari') ? 'glowFadeIn-safari' : 'glowFadeIn';
+const h1GlowPulseName = document.documentElement.classList.contains('is-safari') ? 'glowPulse-safari' : 'glowPulse';
 splashReady.then(() => {
 if (isCoarsePointer) {
   /* deterministic mobile intro: short timed scramble burst, then hard settle */
@@ -361,9 +363,9 @@ if (isCoarsePointer) {
   }, 200);
   h1El.addEventListener('animationend', e => {
     if (e.animationName === 'fadeUp') h1Settle();
-    if (e.animationName === 'glowFadeIn') {
+    if (e.animationName === h1GlowFadeName) {
       h1El.style.opacity = '1';
-      h1El.style.animation = 'glowPulse 4s ease-in-out infinite';
+      h1El.style.animation = `${h1GlowPulseName} 4s ease-in-out infinite`;
     }
   });
 
@@ -383,7 +385,7 @@ if (!isCoarsePointer) {
     h1El.style.width = h1El.offsetWidth + 'px';
     h1El.style.height = h1El.offsetHeight + 'px';
     h1El.style.opacity = '1';
-    h1El.style.animation = 'glowPulse 4s ease-in-out infinite';
+    h1El.style.animation = `${h1GlowPulseName} 4s ease-in-out infinite`;
     cancelH1?.();
     h1El.classList.remove('chroma');
     void h1El.offsetWidth;
