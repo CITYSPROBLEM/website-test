@@ -4,7 +4,7 @@
 .splash {
   position: fixed; inset: 0;
   z-index: 9999;
-  background: #000;
+  background: transparent;
   display: flex; align-items: center; justify-content: center;
   transition: opacity .6s ease, visibility .6s ease;
 }
@@ -17,9 +17,14 @@
   width: clamp(120px, 30vw, 280px);
   height: auto;
   opacity: 0;
-  cursor: pointer !important;
+  cursor: none !important;
   filter: brightness(0) invert(1) brightness(0.961);
   animation: splashFadeIn 1.2s .2s ease forwards, splashPulse 2.5s 1.4s ease-in-out infinite;
+  transition: filter .3s ease;
+}
+.splash-logo:hover {
+  animation: splashFadeIn 1.2s .2s ease forwards;
+  filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 14px rgba(0,212,255,.3));
 }
 @keyframes splashFadeIn {
   from { opacity: 0; }
@@ -27,13 +32,20 @@
 }
 @keyframes splashPulse {
   0%, 100% { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 0px transparent); }
-  50%      { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 20px rgba(0,212,255,.4)); }
+  50%      { filter: brightness(0) invert(1) brightness(0.961) drop-shadow(0 0 14px rgba(0,212,255,.3)); }
 }
 /* suppress all site animations while splash is visible */
 .splash-active h1,
 .splash-active .player,
 .splash-active .topbar-flyer {
   animation: none !important;
+}
+.splash-active h1,
+.splash-active .topbar,
+.splash-active .player,
+.splash-active .scroll-arrow {
+  opacity: 0 !important;
+  transition: none !important;
 }
 /* hide overflow while splash is up */
 html.splash-active { overflow: hidden; }
@@ -51,6 +63,21 @@ html {
   scroll-snap-type: y proximity;
   scrollbar-width: thin;
   scrollbar-color: rgba(0,212,255,.35) rgba(255,255,255,.08);
+}
+html.page-subpage {
+  scroll-snap-type: none;
+}
+html.page-subpage main {
+  padding-top: 80px;
+}
+.info-section[hidden] { display: none; }
+html.page-subpage .featured-wrap,
+html.page-subpage .releases-section,
+html.page-subpage .info-wrap,
+html.page-subpage .dates-wrap,
+html.page-subpage .portfolio-section {
+  min-height: calc(100vh - 80px - var(--player-h, 56px));
+  scroll-snap-align: none;
 }
 html::-webkit-scrollbar { width: 7px; }
 html::-webkit-scrollbar-track { background: rgba(255,255,255,.08); }
@@ -142,7 +169,6 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 1.5rem;
   background: rgba(4,6,15,.45);
-  border-bottom: 1px solid rgba(0,212,255,.12);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -167,6 +193,73 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   text-shadow: 0 0 14px rgba(0,212,255,.3);
   transition: opacity .12s ease;
 }
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  margin-left: auto;
+}
+.topbar-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  padding: .15rem 0;
+  font-family: 'Michroma', sans-serif;
+  font-size: clamp(.52rem, .95vw, .64rem);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(222, 245, 255, .88);
+  text-decoration: none;
+  background: transparent;
+  background-image: none;
+  border: none;
+  overflow: visible;
+  position: relative;
+  transition: color .2s ease, text-shadow .2s ease;
+}
+.topbar-nav-link::before { content: none; }
+.topbar-nav-link:hover,
+.topbar-nav-link:focus-visible {
+  color: rgba(0, 212, 255, 0.55);
+  text-shadow: 0 0 6px rgba(0,212,255,.1);
+  background-image: none;
+}
+.topbar-nav-link.is-active,
+.topbar-nav-link[aria-current='page'] {
+  color: var(--ice);
+  text-shadow: 0 0 10px rgba(0,212,255,.45);
+}
+
+/* uniform subtle hover glow for clickable elements */
+.bio-close:hover,
+.bio-press-links a:hover,
+.info-block-header:hover .bio-panel-label,
+.featured-link:hover,
+.portfolio-link:hover,
+.past-shows-year-btn:hover,
+a.date-row:hover,
+a.date-row:hover .date-date,
+a.date-row:hover .date-venue {
+  color: rgba(0, 212, 255, 0.55);
+  text-shadow: 0 0 6px rgba(0,212,255,.1);
+  background-image: none;
+}
+a.date-row {
+  text-decoration: none;
+  color: inherit;
+  background-image: none;
+  width: auto;
+  padding: 0;
+  padding-top: .6rem;
+  padding-bottom: .6rem;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  overflow: visible;
+}
+a.date-row::before { display: none; }
 
 /* flyer handles the motion — lives outside topbar so it stays behind
    vignette (8), grain (9), and scan lines (10), matching the h1 treatment */
@@ -366,7 +459,7 @@ h1.chroma {
   animation: chromaAberr .5s ease forwards, glowPulse 4s ease-in-out infinite !important;
 }
 
-nav {
+nav:not(.topbar-nav) {
   display: flex; flex-direction: column;
   align-items: center;
   gap: 1.25rem;
@@ -592,6 +685,7 @@ a:hover .arr { transform: translateX(3px); }
 
   html { touch-action: pan-y; overscroll-behavior-x: none; max-width: 100vw; }
   .topbar { background: linear-gradient(to bottom, #030a14 0%, rgba(4,6,15,.45) 100%); }
+  .topbar-nav { display: none; }
 
   main {
     padding: 72px 1.25rem 4rem;
@@ -1213,7 +1307,7 @@ a:hover .arr { transform: translateX(3px); }
   white-space: nowrap;
   transition: color .3s;
 }
-.release-card:hover .release-card-title { color: var(--ice); }
+.release-card:hover .release-card-title { color: rgba(0, 212, 255, 0.55); text-shadow: 0 0 6px rgba(0,212,255,.1); }
 .release-card-meta {
   font-family: 'Michroma', sans-serif;
   font-size: clamp(.45rem, 1vw, .55rem);
@@ -1325,7 +1419,6 @@ a:hover .arr { transform: translateX(3px); }
   color: var(--text);
   white-space: nowrap;
 }
-
 /* ── past shows ──────────────────────────────────── */
 .past-shows-section {
   padding-top: clamp(1rem, 2.4vw, 1.6rem);
@@ -1418,7 +1511,7 @@ a:hover .arr { transform: translateX(3px); }
   text-shadow: 0 0 10px rgba(0,212,255,.18);
   transition: color .25s ease;
 }
-.past-shows-back-btn:hover { color: var(--ice); }
+.past-shows-back-btn:hover { color: rgba(0, 212, 255, 0.55); text-shadow: 0 0 6px rgba(0,212,255,.1); }
 .past-shows-list .date-date {
   font-size: clamp(.55rem, 1.6vw, .8rem);
   color: rgba(0,212,255,.7);

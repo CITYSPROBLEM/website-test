@@ -9,6 +9,12 @@ const splashReady = (function() {
       splashLogo.removeEventListener('click', dismiss);
       splash.classList.add('dismissed');
       document.documentElement.classList.remove('splash-active');
+      /* fade in topbar */
+      const topbar = document.querySelector('.topbar');
+      if (topbar) {
+        topbar.style.transition = 'opacity .9s ease';
+        topbar.style.opacity = '1';
+      }
       splash.addEventListener('transitionend', () => splash.remove());
       resolve();
     });
@@ -19,7 +25,7 @@ const splashReady = (function() {
 const cur  = document.getElementById('cur');
 const ring = document.getElementById('cur-ring');
 const isCoarsePointer = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-const LINK_HOVER_SELECTOR = 'a, button, .player-progress, .player-vol-slider, .player-track-name, .glitch-wrap, .release-card, .featured-link';
+const LINK_HOVER_SELECTOR = 'a, button, .topbar-logo, .player-progress, .player-vol-slider, .player-track-name, .glitch-wrap, .release-card, .featured-link';
 const scheduleNonCritical = window.requestIdleCallback
   ? fn => window.requestIdleCallback(fn, { timeout: 1200 })
   : fn => setTimeout(fn, 220);
@@ -40,6 +46,21 @@ if (!isCoarsePointer) {
     const to = e.relatedTarget;
     if (to && to.closest && to.closest(LINK_HOVER_SELECTOR)) return;
     document.body.classList.remove('link-hover');
+  });
+}
+
+/* topbar logo -> home route */
+const topbarLogoEl = document.querySelector('.topbar-logo');
+if (topbarLogoEl) {
+  const goHome = () => { window.location.href = 'index.html'; };
+  topbarLogoEl.setAttribute('role', 'link');
+  topbarLogoEl.setAttribute('tabindex', '0');
+  topbarLogoEl.addEventListener('click', goHome);
+  topbarLogoEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      goHome();
+    }
   });
 }
 
@@ -250,7 +271,7 @@ function addScrambleHover(el) {
 const h1El   = document.querySelector('h1');
 const h1Orig = 'CITYSPROBLEM';
 let cancelH1;
-let h1FadeUpDone = false;
+let h1FadeUpDone = !h1El;
 let h1SettleFallbackTimer = null;
 let h1SettleWatchdogTimer = null;
 
@@ -263,6 +284,12 @@ function h1ClearTimers() {
     clearTimeout(h1SettleWatchdogTimer);
     h1SettleWatchdogTimer = null;
   }
+}
+
+function applyH1Centering() {
+  if (!h1El) return;
+  const overflow = h1El.scrollWidth - h1El.clientWidth;
+  h1El.style.transform = overflow > 0 ? `translateX(${-(overflow / 2)}px)` : '';
 }
 
 function h1FinalizeImmediate() {
@@ -288,6 +315,7 @@ function h1Settle() {
   cancelH1 = settleIn(h1Orig, t => { h1El.textContent = t; applyH1Centering(); });
 }
 
+if (h1El) {
 splashReady.then(() => {
 if (isCoarsePointer) {
   /* deterministic mobile intro: short timed scramble burst, then hard settle */
@@ -333,10 +361,6 @@ if (isCoarsePointer) {
   h1SettleWatchdogTimer = setTimeout(h1FinalizeImmediate, 2600);
 }
 });
-function applyH1Centering() {
-  const overflow = h1El.scrollWidth - h1El.clientWidth;
-  h1El.style.transform = overflow > 0 ? `translateX(${-(overflow / 2)}px)` : '';
-}
 
 if (!isCoarsePointer) {
   h1El.addEventListener('mouseenter', () => {
@@ -360,6 +384,7 @@ if (!isCoarsePointer) {
     });
   });
 }
+} /* end if (h1El) */
 
 /* ── mouse-reactive aurora ──────────────────────── */
 {
@@ -431,16 +456,18 @@ const mainEl = document.querySelector('main');
 const pastShowsSection = document.getElementById('pastShowsSection');
 let arrowBaseTop = null;
 function positionScrollArrow() {
+  if (!h1El || !scrollArrowEl) return;
   const h1Bottom  = h1El.getBoundingClientRect().bottom + window.scrollY;
   const playerTop = playerEl.getBoundingClientRect().top + window.scrollY;
   arrowBaseTop = (h1Bottom + playerTop) / 2 - 7;
   scrollArrowEl.style.top = (arrowBaseTop - window.scrollY) + 'px';
 }
-document.fonts.ready.then(positionScrollArrow);
-window.addEventListener('resize', positionScrollArrow);
-/* re-position once h1 fadeUp animation finishes (final resting position) */
-h1El.addEventListener('animationend', positionScrollArrow);
-window.addEventListener('load', positionScrollArrow);
+if (h1El && scrollArrowEl) {
+  document.fonts.ready.then(positionScrollArrow);
+  window.addEventListener('resize', positionScrollArrow);
+  h1El.addEventListener('animationend', positionScrollArrow);
+  window.addEventListener('load', positionScrollArrow);
+}
 
 /* ── audio player — tracks sourced from SONGS/tracks.js ─────────── */
 const audio       = document.getElementById('audio');
@@ -579,11 +606,22 @@ volSlider.addEventListener('input', () => {
 });
 updateVolTrack();
 
-/* sync player width to h1 */
+/* sync player width to h1 (or h1-equivalent on subpages) */
 function syncPlayerWidth() {
-  const w = window.innerWidth <= 768
-    ? playerEl.offsetWidth
-    : h1El.offsetWidth;
+  let w;
+  if (window.innerWidth <= 768) {
+    w = playerEl.offsetWidth;
+  } else if (h1El) {
+    w = h1El.offsetWidth;
+  } else {
+    /* subpages: approximate the h1 width using the same font metrics */
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-family:"Michroma",sans-serif;font-weight:900;font-size:clamp(1rem,5vw,4rem);letter-spacing:.04em;line-height:1;';
+    probe.textContent = 'CITYSPROBLEM';
+    document.body.appendChild(probe);
+    w = probe.offsetWidth;
+    probe.remove();
+  }
   playerEl.style.setProperty('--player-content-w', w + 'px');
   document.documentElement.style.setProperty('--player-h', playerEl.offsetHeight + 'px');
   syncCenterScrollSpacer();
@@ -691,17 +729,22 @@ window.addEventListener('resize', () => {
 }
 
 /* scroll arrow follows h1 off screen as user scrolls */
-window.addEventListener('scroll', () => {
-  if (arrowBaseTop === null) return;
-  const y = arrowBaseTop - window.scrollY;
-  scrollArrowEl.style.top = y + 'px';
-  scrollArrowEl.style.opacity = y < -20 ? '0' : '';
-}, { passive: true });
+if (scrollArrowEl) {
+  window.addEventListener('scroll', () => {
+    if (arrowBaseTop === null) return;
+    const y = arrowBaseTop - window.scrollY;
+    scrollArrowEl.style.top = y + 'px';
+    scrollArrowEl.style.opacity = y < -20 ? '0' : '';
+  }, { passive: true });
+}
 
 let topbarPushStartScroll = 0;
 let topbarPushEndScroll = 1;
+let topbarRafPending = false;
+let topbarProgress = 0;
 
 function recalcTopbarScrollRange() {
+  if (!h1El) return;
   const barH = topbarEl.offsetHeight || 72;
   const h1Rect = h1El.getBoundingClientRect();
   const h1TopDoc = window.scrollY + h1Rect.top;
@@ -713,6 +756,7 @@ function recalcTopbarScrollRange() {
 }
 
 function topbarTargetFromScroll() {
+  if (!h1El) return 0;
   const h1Rect = h1El.getBoundingClientRect();
   /* hard guard for fast flicks: if title is off-screen, bar must be fully hidden */
   if (h1Rect.bottom <= 8) return 1;
@@ -732,9 +776,6 @@ function applyTopbarProgress(hideProgress) {
   topbarEl.style.pointerEvents = hideProgress > 0.98 ? 'none' : '';
 }
 
-let topbarRafPending = false;
-let topbarProgress = 0;
-
 function scheduleTopbarPositionUpdate() {
   if (topbarRafPending) return;
   topbarRafPending = true;
@@ -745,19 +786,23 @@ function scheduleTopbarPositionUpdate() {
     applyTopbarProgress(topbarProgress);
   });
 }
-window.addEventListener('scroll', scheduleTopbarPositionUpdate, { passive: true });
-window.addEventListener('resize', () => {
-  recalcTopbarScrollRange();
-  scheduleTopbarPositionUpdate();
-}, { passive: true });
-document.fonts.ready.then(() => {
+
+/* topbar scroll-hide only on pages with hero h1 */
+if (h1El) {
+  window.addEventListener('scroll', scheduleTopbarPositionUpdate, { passive: true });
+  window.addEventListener('resize', () => {
+    recalcTopbarScrollRange();
+    scheduleTopbarPositionUpdate();
+  }, { passive: true });
+  document.fonts.ready.then(() => {
+    recalcTopbarScrollRange();
+    topbarProgress = topbarTargetFromScroll();
+    applyTopbarProgress(topbarProgress);
+  });
   recalcTopbarScrollRange();
   topbarProgress = topbarTargetFromScroll();
   applyTopbarProgress(topbarProgress);
-});
-recalcTopbarScrollRange();
-topbarProgress = topbarTargetFromScroll();
-applyTopbarProgress(topbarProgress);
+}
 
 /* info section scramble — apply hover-scramble after DOM ready */
 const infoSection = document.getElementById('infoSection');
@@ -1143,38 +1188,14 @@ document.addEventListener('click', e => {
    (info section elements are excluded — no hover scramble there) */
 const infoSectionEls = new Set(infoSection.querySelectorAll('.bio-panel-label, .bio-text, .bio-press-links a'));
 [
-  /* panel close buttons */
-  ...document.querySelectorAll('.bio-close'),
   /* panel titles + labels (excluding info section) */
   ...Array.from(document.querySelectorAll('.bio-panel-title, .bio-panel-label')).filter(el => !infoSectionEls.has(el)),
   /* bio body text (excluding info section) */
   ...Array.from(document.querySelectorAll('.bio-text')).filter(el => !infoSectionEls.has(el)),
-  /* all panel links (excluding info section) */
-  ...Array.from(document.querySelectorAll('.bio-press-links a')).filter(el => !infoSectionEls.has(el)),
-  /* corner close button */
 ].forEach(addScrambleHover);
 
-/* hover-scramble for info section accordion headers —
-   hover target is .info-block-header, text lives in child .bio-panel-label */
-infoSection.querySelectorAll('.info-block-header').forEach(header => {
-  const label = header.querySelector('.bio-panel-label');
-  if (!label) return;
-  const orig = label.textContent;
-  let cancelScramble = null, cancelResolve = null, unlockWidth = null;
-  header.addEventListener('mouseenter', () => {
-    cancelResolve?.(); cancelResolve = null;
-    unlockWidth?.(); unlockWidth = null;
-    unlockWidth = lockBracketTextWidth(label, orig);
-    cancelScramble?.();
-    cancelScramble = scrambleLoop(orig, t => { label.textContent = t; }, 30);
-  });
-  header.addEventListener('mouseleave', () => {
-    cancelScramble?.(); cancelScramble = null;
-    cancelResolve = scrambleResolve(orig, t => { label.textContent = t; }, ...settleParams(orig), () => {
-      unlockWidth?.(); unlockWidth = null;
-    });
-  });
-});
+/* info-block-header scramble removed — clickable elements skip hover-scramble */
+
 
 /* ── generic section reveal with scramble-settle ───────────────── */
 function initSectionReveal(sectionId, textSelector) {
@@ -1277,7 +1298,7 @@ window.addEventListener('resize', () => {
 
 /* hover-scramble for new static text elements */
 document.querySelectorAll(
-  '.featured-title, .featured-meta, .featured-link, .release-card-title, .release-card-meta, .dates-empty, #datesSection .date-date, #datesSection .date-venue, .portfolio-title, .portfolio-meta, .portfolio-link, .quote-line, .quote-source, #pastShowsSection .section-label, #pastShowsSection .past-shows-year-btn, #pastShowsSection .past-shows-back-btn'
+  '.featured-title, .featured-meta, .dates-empty, #datesSection .date-date, #datesSection .date-venue, .portfolio-title, .portfolio-meta, .quote-line, .quote-source, #pastShowsSection .section-label'
 ).forEach(addScrambleHover);
 Array.from(document.querySelectorAll('.section-label'))
   .filter(el => !pastShowsSection.contains(el))
