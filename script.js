@@ -53,9 +53,11 @@ const scheduleNonCritical = window.requestIdleCallback
   ? fn => window.requestIdleCallback(fn, { timeout: 1200 })
   : fn => setTimeout(fn, 220);
 let mx = 0, my = 0, rx = 0, ry = 0;
+let cursorDirty = false;
 if (!isCoarsePointer) {
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
+    cursorDirty = true;
   });
   document.addEventListener('mouseover', e => {
     if (!(e.target instanceof Element)) return;
@@ -1356,11 +1358,11 @@ document.querySelectorAll(
   '.featured-title, .featured-meta, .dates-empty, #datesSection .date-date, #datesSection .date-venue, .portfolio-title, .portfolio-meta, .quote-line, .quote-source, #pastShowsSection .section-label'
 ).forEach(addScrambleHover);
 Array.from(document.querySelectorAll('.section-label'))
-  .filter(el => !pastShowsSection.contains(el))
+  .filter(el => !pastShowsSection || !pastShowsSection.contains(el))
   .forEach(addScrambleHover);
 
 /* past shows year accordion */
-const pastShowsYears = Array.from(document.querySelectorAll('.past-shows-year'));
+const pastShowsYears = pastShowsSection ? Array.from(document.querySelectorAll('.past-shows-year')) : [];
 
 function closePastShowsYear(group) {
   const list = group.querySelector('.past-shows-list');
@@ -1436,11 +1438,13 @@ pastShowsYears.forEach(group => {
   });
 
 });
-document.addEventListener('click', e => {
-  const openGroup = pastShowsSection.querySelector('.past-shows-year.open');
-  if (!openGroup || pastShowsSection.contains(e.target)) return;
-  resetPastShowsAccordion(false);
-});
+if (pastShowsSection) {
+  document.addEventListener('click', e => {
+    const openGroup = pastShowsSection.querySelector('.past-shows-year.open');
+    if (!openGroup || pastShowsSection.contains(e.target)) return;
+    resetPastShowsAccordion(false);
+  });
+}
 
 /* ── magnetic hover on CTA buttons ─────────────────── */
 if (enableHeavyPointerFx) {
@@ -1495,11 +1499,14 @@ if (enableHeavyPointerFx) {
   function tick() {
     if (!tickRunning) return;
     if (!isCoarsePointer) {
-      cur.style.transform = `translate(${mx}px,${my}px)`;
-      rx += (mx - rx) * .25; ry += (my - ry) * .25;
-      ring.style.transform = `translate(${rx}px,${ry}px)`;
+      if (cursorDirty) {
+        cur.style.transform = `translate(${mx}px,${my}px)`;
+        rx += (mx - rx) * .25; ry += (my - ry) * .25;
+        ring.style.transform = `translate(${rx}px,${ry}px)`;
+        if (Math.abs(mx - rx) < 0.1 && Math.abs(my - ry) < 0.1) cursorDirty = false;
+      }
     }
-    if (enableAnimatedGrain && ++grainFrame % 6 === 0)
+    if (enableAnimatedGrain && ++grainFrame % 10 === 0)
       turbEl.setAttribute('seed', (noiseSeed = (noiseSeed + 1) % 200));
     if (window.shouldDrawVisualizer?.()) window.drawVisualizer();
     tickRafId = requestAnimationFrame(tick);

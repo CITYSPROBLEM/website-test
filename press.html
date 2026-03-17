@@ -36,14 +36,14 @@
   root.classList.add("is-" + browser);
 })();
 </script>
-<link rel="stylesheet" href="styles.css?v=20260316m">
+<link rel="stylesheet" href="styles.css?v=20260316p">
 <script>
 (function(){
   var b = document.documentElement.dataset.browser;
   if (b !== "safari" && b !== "chrome" && b !== "firefox") return;
   var link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "styles." + b + ".css?v=20260316m";
+  link.href = "styles." + b + ".css?v=20260316p";
   document.head.appendChild(link);
 })();
 </script>
@@ -197,13 +197,13 @@
 <div class="tap-hint" id="tapHint"></div>
 
 <script src="SONGS/tracks.js?v=20260309"></script>
-<script src="script.js?v=20260316m"></script>
+<script src="script.js?v=20260316p"></script>
 <script>
 (function(){
   var b = document.documentElement.dataset.browser;
   if (b !== "safari" && b !== "chrome" && b !== "firefox") return;
   var script = document.createElement("script");
-  script.src = "script." + b + ".js?v=20260316m";
+  script.src = "script." + b + ".js?v=20260316p";
   document.body.appendChild(script);
 })();
 </script>
