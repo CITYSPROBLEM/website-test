@@ -16,11 +16,14 @@ a, button, input, textarea, select, [contenteditable] {
 body::before {
   content: '';
   position: fixed;
-  inset: 0;
+  top: 72px;
+  left: 0;
+  right: 0;
+  bottom: var(--player-h, 56px);
   background: #030a14;
   opacity: 0;
   pointer-events: none;
-  z-index: 10050;
+  z-index: 90;
   transition: opacity .16s linear;
 }
 html.nav-transitioning body::before {
@@ -80,9 +83,7 @@ html.nav-transitioning body::before {
 html.splash-active { overflow: hidden; }
 
 /* page load fade-in — content starts hidden, bg/vignette/grain stay visible */
-html.page-loading main,
-html.page-loading .topbar,
-html.page-loading .player {
+html.page-loading main {
   opacity: 0 !important;
   transition: none !important;
   animation-play-state: paused !important;
@@ -90,9 +91,7 @@ html.page-loading .player {
 html.page-loading main * {
   animation-play-state: paused !important;
 }
-html.page-ready main,
-html.page-ready .topbar,
-html.page-ready .player {
+html.page-ready main {
   transition: opacity .8s ease !important;
 }
 
@@ -658,6 +657,10 @@ a:hover .arr { transform: translateX(3px); }
   z-index: 100;
   opacity: 0;
   animation: fadeUp .9s .7s ease forwards;
+}
+html.skip-player-intro .player {
+  opacity: 1;
+  animation: none;
 }
 .player-inner {
   width: var(--player-content-w, 400px);
