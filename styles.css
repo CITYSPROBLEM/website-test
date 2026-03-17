@@ -1202,6 +1202,7 @@ a:hover .arr { transform: translateX(3px); }
 .ticker.visible { animation: fadeUp .9s ease forwards; }
 .ticker-track {
   display: flex;
+  width: max-content;
   gap: 1.5rem;
   white-space: nowrap;
   animation: tickerScroll 22s linear infinite;

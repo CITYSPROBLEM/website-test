@@ -1312,6 +1312,20 @@ function initSectionReveal(sectionId, textSelector) {
 }
 
 /* reveal tickers */
+document.querySelectorAll('.ticker-track').forEach(track => {
+  if (track.dataset.loopReady === '1') return;
+  const items = Array.from(track.children);
+  if (!items.length) return;
+  const clones = document.createDocumentFragment();
+  items.forEach(item => {
+    const clone = item.cloneNode(true);
+    clone.setAttribute('aria-hidden', 'true');
+    clones.appendChild(clone);
+  });
+  track.appendChild(clones);
+  track.dataset.loopReady = '1';
+});
+
 document.querySelectorAll('.ticker').forEach(t => {
   let revealed = false;
   const obs = new IntersectionObserver(entries => {
