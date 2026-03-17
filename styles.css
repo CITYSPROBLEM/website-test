@@ -73,6 +73,8 @@ html.page-ready .player {
   --text: #e0eaf8;
   --ice: #00d4ff;
   --ice-b: #a78bfa;
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+  --content-max: min(1000px, 92vw);
 }
 
 html {
@@ -124,6 +126,12 @@ body {
   color: var(--text);
   font-family: 'Michroma', sans-serif;
   font-weight: 400;
+}
+img,
+picture,
+video {
+  max-width: 100%;
+  height: auto;
 }
 .bg-fixed {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;
@@ -230,14 +238,24 @@ body.link-hover #cur-ring { width: 42px; height: 42px; margin: -21px 0 0 -21px; 
   margin-left: auto;
 }
 html:not(.page-subpage) .topbar-nav.hero-nav-unit {
-  margin: 2.2rem auto 0;
+  margin: clamp(1.2rem, 3.5vh, 2.4rem) auto 0;
   align-self: center;
-  width: max-content;
+  width: min(94vw, max-content);
+  max-width: 94vw;
   justify-content: center;
+  flex-wrap: wrap;
+  row-gap: .55rem;
+  column-gap: .85rem;
   position: relative;
   z-index: 6;
   transform: scale(1.4);
   transform-origin: center top;
+  opacity: 0;
+  animation: fadeUpHeroNav .9s .2s ease forwards;
+}
+html:not(.page-subpage) .topbar-nav.hero-nav-unit .topbar-nav-link {
+  white-space: normal;
+  line-height: 1.2;
 }
 .topbar-nav-link {
   display: inline-flex;
@@ -324,7 +342,7 @@ main {
   position: relative; z-index: 2;
   display: flex; flex-direction: column;
   align-items: center;
-  padding: 72px clamp(1rem, 4vw, 3rem) clamp(3rem, 5vw, 6rem);
+  padding: 72px var(--page-gutter) clamp(3rem, 5vw, 6rem);
   text-align: center;
   overflow-x: hidden;
   overflow-x: clip;
@@ -590,6 +608,10 @@ a:hover .arr { transform: translateX(3px); }
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes fadeUpHeroNav {
+  from { opacity: 0; transform: translateY(16px) scale(1.4); }
+  to   { opacity: 1; transform: translateY(0) scale(1.4); }
+}
 @keyframes fadeUpFixed {
   from { opacity: 0; transform: translateX(-50%) translateY(16px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -750,6 +772,20 @@ a:hover .arr { transform: translateX(3px); }
   html { touch-action: pan-y; overscroll-behavior-x: none; max-width: 100vw; }
   .topbar { background: linear-gradient(to bottom, #030a14 0%, rgba(4,6,15,.45) 100%); }
   .topbar-nav { display: none; }
+  html:not(.page-subpage) .topbar-nav.hero-nav-unit {
+    display: flex;
+    width: min(95vw, 520px);
+    max-width: 95vw;
+    transform: none;
+    animation: fadeUp .9s .2s ease forwards;
+    margin-top: clamp(1.1rem, 2.8vh, 1.8rem);
+    gap: .6rem .75rem;
+  }
+  html:not(.page-subpage) .topbar-nav.hero-nav-unit .topbar-nav-link {
+    font-size: clamp(.56rem, 2.35vw, .68rem);
+    letter-spacing: .14em;
+    white-space: nowrap;
+  }
 
   main {
     padding: 72px 1.25rem 4rem;
@@ -1224,11 +1260,13 @@ a:hover .arr { transform: translateX(3px); }
 .featured-inner {
   display: flex;
   gap: clamp(1.5rem, 4vw, 3rem);
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
 }
 .featured-artwork-wrap {
   width: clamp(140px, 35vw, 340px);
-  flex-shrink: 0;
+  flex: 0 1 clamp(140px, 35vw, 340px);
   transform-style: preserve-3d;
   transition: transform .25s ease-out;
 }
@@ -1270,6 +1308,8 @@ a:hover .arr { transform: translateX(3px); }
   display: flex;
   flex-direction: column;
   gap: .6rem;
+  flex: 1 1 18rem;
+  min-width: min(18rem, 100%);
 }
 .featured-title {
   font-family: 'Michroma', sans-serif;
@@ -1328,7 +1368,7 @@ a:hover .arr { transform: translateX(3px); }
 
 /* ── discography grid ────────────────────────────── */
 .releases-section {
-  max-width: min(1000px, 92vw);
+  max-width: var(--content-max);
   padding: clamp(2rem, 4vw, 4rem) clamp(1rem, 3vw, 2rem) clamp(2.5rem, 5vw, 5rem);
   opacity: 0;
   align-items: stretch;
@@ -1372,7 +1412,8 @@ a:hover .arr { transform: translateX(3px); }
   letter-spacing: .12em;
   color: var(--text);
   margin-top: .75rem;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.4;
   transition: color .3s;
 }
 .release-card:hover .release-card-title { color: rgba(0, 212, 255, 0.55); text-shadow: 0 0 6px rgba(0,212,255,.1); }
@@ -1382,7 +1423,8 @@ a:hover .arr { transform: translateX(3px); }
   letter-spacing: .12em;
   color: rgba(200,230,255,.68);
   margin-top: .3rem;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.35;
 }
 
 /* ── image glitch hover ──────────────────────────── */
@@ -1454,7 +1496,8 @@ a:hover .arr { transform: translateX(3px); }
   font-size: clamp(.55rem, 1.3vw, .7rem);
   letter-spacing: .25em;
   color: rgba(200,230,255,.2);
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.45;
 }
 .dates-list {
   display: flex;
@@ -1467,6 +1510,7 @@ a:hover .arr { transform: translateX(3px); }
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: clamp(.1rem, .5vw, .28rem);
   padding: .6rem 0;
   border-bottom: 1px solid rgba(0,212,255,.08);
@@ -1485,7 +1529,8 @@ a:hover .arr { transform: translateX(3px); }
   font-size: clamp(.6rem, 2.2vw, 1rem);
   letter-spacing: .1em;
   color: var(--text);
-  white-space: nowrap;
+  white-space: normal;
+  text-wrap: balance;
 }
 /* ── past shows ──────────────────────────────────── */
 .past-shows-section {
@@ -1517,7 +1562,8 @@ a:hover .arr { transform: translateX(3px); }
   position: relative;
   text-shadow: 0 0 10px rgba(0,212,255,.25);
   transition: color .25s;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.4;
   border-bottom: 1px solid rgba(0,212,255,.22);
 }
 
@@ -1596,7 +1642,7 @@ a:hover .arr { transform: translateX(3px); }
 /* ── portfolio phase 1 blocks ───────────────────── */
 .portfolio-section {
   width: 100%;
-  max-width: min(1000px, 92vw);
+  max-width: var(--content-max);
   padding: clamp(2rem, 4vw, 3.8rem) clamp(1rem, 3vw, 2rem);
   opacity: 0;
   text-align: center;
@@ -1631,6 +1677,7 @@ a:hover .arr { transform: translateX(3px); }
   letter-spacing: .13em;
   color: rgba(228, 243, 255, .94);
   line-height: 1.6;
+  text-wrap: pretty;
 }
 .portfolio-meta {
   font-family: 'Michroma', sans-serif;
@@ -1884,6 +1931,21 @@ a:hover .arr { transform: translateX(3px); }
   .info-section { max-width: 100%; overflow-x: hidden; }
   .bio-text { word-break: break-word; }
   .label-btn { white-space: normal; text-align: left; }
+}
+
+@media (max-width: 980px) and (min-width: 769px) {
+  .topbar-nav { gap: .85rem; }
+}
+
+@media (max-width: 420px) {
+  html:not(.page-subpage) .topbar-nav.hero-nav-unit {
+    width: 96vw;
+    gap: .5rem .6rem;
+  }
+  html:not(.page-subpage) .topbar-nav.hero-nav-unit .topbar-nav-link {
+    font-size: clamp(.54rem, 2.9vw, .63rem);
+    letter-spacing: .11em;
+  }
 }
 
 /* ── disable glitch on touch devices ─────────────── */
