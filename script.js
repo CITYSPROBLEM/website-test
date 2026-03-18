@@ -39,14 +39,16 @@ function syncNavPlacement() {
   const topbarEl = document.querySelector('.topbar');
   const isHomePage = !document.documentElement.classList.contains('page-subpage');
 
-  /* mobile: keep canonical nav in topbar, render a hero clone on home */
+  /* mobile: hide topbar nav on home (hero clone only), show in topbar on subpages */
   if (isCoarsePointer) {
     const existingClone = document.querySelector('.topbar-nav.hero-nav-clone');
     if (isHomePage && heroEl) {
-      if (topbarEl && !topbarEl.contains(navEl)) topbarEl.appendChild(navEl);
+      /* hide canonical nav in topbar on home */
+      navEl.classList.add('topbar-nav-hidden');
       navEl.classList.remove('hero-nav-unit');
       if (existingClone) existingClone.remove();
       const clone = navEl.cloneNode(true);
+      clone.classList.remove('topbar-nav-hidden');
       clone.classList.add('hero-nav-clone', 'hero-nav-unit');
       clone.removeAttribute('aria-label');
       heroEl.appendChild(clone);
@@ -54,7 +56,7 @@ function syncNavPlacement() {
     }
     if (existingClone) existingClone.remove();
     if (topbarEl && !topbarEl.contains(navEl)) topbarEl.appendChild(navEl);
-    navEl.classList.remove('hero-nav-unit');
+    navEl.classList.remove('hero-nav-unit', 'topbar-nav-hidden');
     return;
   }
 
