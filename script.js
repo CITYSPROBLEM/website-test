@@ -1155,6 +1155,8 @@ function recalcTopbarScrollRange() {
 function topbarTargetFromScroll() {
   if (!h1El) return 0;
   const h1Rect = h1El.getBoundingClientRect();
+  /* if h1 hasn't been laid out yet (height ~0), keep topbar visible */
+  if (h1Rect.height < 1) return 0;
   /* hard guard for fast flicks: if title is off-screen, bar must be fully hidden */
   if (h1Rect.bottom <= 8) return 1;
 
