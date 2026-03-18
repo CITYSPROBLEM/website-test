@@ -782,8 +782,8 @@ html.skip-player-intro .player {
   .topbar-nav { display: flex; margin-left: 0; gap: .55rem; }
   html:not(.page-subpage) .topbar-nav.hero-nav-unit {
     display: flex;
-    width: min(95vw, 520px);
-    max-width: 95vw;
+    width: min(100%, 520px);
+    max-width: 100%;
     justify-content: center;
     align-self: center;
     text-align: center;
@@ -795,8 +795,8 @@ html.skip-player-intro .player {
   }
 
   html:not(.page-subpage) .hero .topbar-nav.hero-nav-unit {
-    width: min(95vw, 520px);
-    max-width: 95vw;
+    width: min(100%, 520px);
+    max-width: 100%;
     transform: none;
   }
   html.skip-nav-intro:not(.page-subpage) .topbar-nav.hero-nav-unit {
@@ -1970,7 +1970,7 @@ html.skip-player-intro .player {
 
 @media (max-width: 420px) {
   html:not(.page-subpage) .topbar-nav.hero-nav-unit {
-    width: 96vw;
+    width: 100%;
     gap: .5rem .6rem;
   }
   html:not(.page-subpage) .topbar-nav.hero-nav-unit .topbar-nav-link {
