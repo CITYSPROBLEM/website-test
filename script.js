@@ -116,15 +116,15 @@ async function softNavigate(url, replace = false, force = false) {
     }
     curMain.replaceWith(newMain);
     syncNavPlacement();
-    /* fade in new content instead of instant reveal */
+    /* fade in new content — force reflow so Safari sees the opacity:0 frame */
     newMain.style.opacity = '0';
+    newMain.style.transition = 'none';
     newMain.style.visibility = 'visible';
     newMain.style.display = '';
     newMain.hidden = false;
-    requestAnimationFrame(() => {
-      newMain.style.transition = 'opacity .5s ease';
-      newMain.style.opacity = '1';
-    });
+    void newMain.offsetHeight;          /* flush layout */
+    newMain.style.transition = 'opacity .5s ease';
+    newMain.style.opacity = '1';
     if (replace) history.replaceState({}, '', target.href);
     else history.pushState({}, '', target.href);
     setActiveTopbarLink(target.href);
@@ -1309,9 +1309,26 @@ function initInfoSection() {
     const infoLabelOrig = infoLabelEls.map(el => el.textContent);
     let infoLoops = null;
 
+    /* prep stagger: info-blocks start invisible (matches initSectionReveal pattern) */
+    const staggerChildren = Array.from(infoSection.querySelectorAll('.info-block'));
+    staggerChildren.forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(12px)';
+      el.style.transition = 'none';
+    });
+
     function revealInfo() {
       infoLoops = infoLabelEls.map((el, i) => scrambleLoop(infoLabelOrig[i], t => { el.textContent = t; }, 30));
       requestAnimationFrame(() => infoSection.classList.add('visible'));
+
+      /* stagger info-blocks in */
+      staggerChildren.forEach((el, i) => {
+        setTimeout(() => {
+          el.style.transition = 'opacity .5s ease, transform .5s ease';
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, i * 80);
+      });
 
       let settled = false;
       function onFadeInEnd() {
