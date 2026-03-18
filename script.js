@@ -32,6 +32,41 @@ function setActiveTopbarLink(url) {
   });
 }
 
+function syncNavPlacement() {
+  const navEl = document.querySelector('.topbar .topbar-nav') || document.querySelector('.topbar-nav:not(.hero-nav-clone)');
+  if (!navEl) return;
+  const heroEl = document.querySelector('.hero');
+  const topbarEl = document.querySelector('.topbar');
+  const isHomePage = !document.documentElement.classList.contains('page-subpage');
+
+  /* mobile: keep canonical nav in topbar, render a hero clone on home */
+  if (isCoarsePointer) {
+    const existingClone = document.querySelector('.topbar-nav.hero-nav-clone');
+    if (isHomePage && heroEl) {
+      if (topbarEl && !topbarEl.contains(navEl)) topbarEl.appendChild(navEl);
+      navEl.classList.remove('hero-nav-unit');
+      if (existingClone) existingClone.remove();
+      const clone = navEl.cloneNode(true);
+      clone.classList.add('hero-nav-clone', 'hero-nav-unit');
+      clone.removeAttribute('aria-label');
+      heroEl.appendChild(clone);
+      return;
+    }
+    if (existingClone) existingClone.remove();
+    if (topbarEl && !topbarEl.contains(navEl)) topbarEl.appendChild(navEl);
+    navEl.classList.remove('hero-nav-unit');
+    return;
+  }
+
+  if (isHomePage && heroEl) {
+    if (!heroEl.contains(navEl)) heroEl.appendChild(navEl);
+    navEl.classList.add('hero-nav-unit');
+    return;
+  }
+  navEl.classList.remove('hero-nav-unit');
+  if (topbarEl && !topbarEl.contains(navEl)) topbarEl.appendChild(navEl);
+}
+
 function forceRevealMain(mainEl) {
   if (!mainEl) return;
   mainEl.hidden = false;
@@ -75,6 +110,7 @@ async function softNavigate(url, replace = false, force = false) {
       document.querySelector('.topbar')?.appendChild(navEl);
     }
     curMain.replaceWith(newMain);
+    syncNavPlacement();
     forceRevealMain(newMain);
     requestAnimationFrame(() => forceRevealMain(document.querySelector('main')));
     if (replace) history.replaceState({}, '', target.href);
@@ -458,11 +494,9 @@ splashReady.then(() => {
 if (
   homeHeroEl &&
   topbarNavEl &&
-  !document.documentElement.classList.contains('page-subpage') &&
-  !document.documentElement.classList.contains('skip-nav-intro')
+  !document.documentElement.classList.contains('page-subpage')
 ) {
-  if (!homeHeroEl.contains(topbarNavEl)) homeHeroEl.appendChild(topbarNavEl);
-  topbarNavEl.classList.add('hero-nav-unit');
+  syncNavPlacement();
 }
 if (isCoarsePointer) {
   /* deterministic mobile intro: short timed scramble burst, then hard settle */
@@ -991,10 +1025,12 @@ window.addEventListener('resize', () => {
 {
   const vizCanvas = document.getElementById('visualizer');
   const vizCtx = vizCanvas.getContext('2d');
-  const VIZ_HEIGHT_GAMMA = 0.48;
-  const VIZ_HEIGHT_BOOST = 1.28;
-  const VIZ_MIN_VISIBLE_HEIGHT_FRAC = 0.012;
-  let analyser = null, dataArray = null, audioCtxStarted = false;
+  const VIZ_HEIGHT_GAMMA = 0.36;
+  const VIZ_HEIGHT_BOOST = 1.55;
+  const VIZ_TRANSIENT_BOOST = 2.8;
+  const VIZ_NOISE_GATE = 0.03;
+  const VIZ_MIN_VISIBLE_HEIGHT_FRAC = 0.003;
+  let analyser = null, dataArray = null, prevData = null, audioCtxStarted = false;
   let vizMinBin = 0, vizMaxBin = 0;
   let vizFrameCount = 0;
 
@@ -1005,12 +1041,13 @@ window.addEventListener('resize', () => {
     const source = audioCtx.createMediaElementSource(audio);
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.32;
+    analyser.smoothingTimeConstant = 0.08;
     analyser.minDecibels = -96;
     analyser.maxDecibels = -16;
     source.connect(analyser);
     analyser.connect(audioCtx.destination);
     dataArray = new Uint8Array(analyser.frequencyBinCount);
+    prevData = new Float32Array(analyser.frequencyBinCount);
     const hzPerBin = audioCtx.sampleRate / analyser.fftSize;
     vizMinBin = 0;
     vizMaxBin = Math.min(
@@ -1033,6 +1070,7 @@ window.addEventListener('resize', () => {
   function clearVisualizer() {
     const W = vizCanvas.clientWidth, H = vizCanvas.clientHeight;
     vizCtx.clearRect(0, 0, W, H);
+    if (prevData) prevData.fill(0);
   }
 
   function shouldDrawVisualizer() {
@@ -1060,9 +1098,13 @@ window.addEventListener('resize', () => {
     const minVisibleH = H * VIZ_MIN_VISIBLE_HEIGHT_FRAC;
     for (let i = 0; i < bars; i++) {
       const bin = minBin + i;
-      const v = dataArray[bin] / 255;
+      const raw = dataArray[bin] / 255;
+      const v = raw <= VIZ_NOISE_GATE ? 0 : (raw - VIZ_NOISE_GATE) / (1 - VIZ_NOISE_GATE);
+      const prev = prevData ? prevData[bin] : 0;
+      const transient = Math.max(0, v - prev) * VIZ_TRANSIENT_BOOST;
+      if (prevData) prevData[bin] = v;
       const shaped = Math.pow(v, VIZ_HEIGHT_GAMMA);
-      const reactive = Math.min(1, shaped * VIZ_HEIGHT_BOOST);
+      const reactive = Math.min(1, shaped * VIZ_HEIGHT_BOOST + transient);
       const h = v > 0 ? Math.max(minVisibleH, reactive * H) : 0;
       vizCtx.fillStyle = `rgba(0,212,255,${0.12 + reactive * 0.44})`;
       vizCtx.fillRect(i * barW, H - h, barW - 1, h);
