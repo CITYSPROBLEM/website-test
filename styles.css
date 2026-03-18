@@ -5,29 +5,9 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
 }
-html.nav-transitioning,
-html.nav-transitioning * {
-  cursor: none !important;
-}
 a, button, input, textarea, select, [contenteditable] {
   cursor: none !important;
   caret-color: transparent !important;
-}
-body::before {
-  content: '';
-  position: fixed;
-  top: 72px;
-  left: 0;
-  right: 0;
-  bottom: var(--player-h, 56px);
-  background: #030a14;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 90;
-  transition: opacity .16s linear;
-}
-html.nav-transitioning body::before {
-  opacity: 1;
 }
 
 /* splash screen */
@@ -83,15 +63,15 @@ html.nav-transitioning body::before {
 html.splash-active { overflow: hidden; }
 
 /* page load fade-in — content starts hidden, bg/vignette/grain stay visible */
-html.page-loading main {
+html.page-loading:not(.skip-page-intro) main {
   opacity: 0 !important;
   transition: none !important;
   animation-play-state: paused !important;
 }
-html.page-loading main * {
+html.page-loading:not(.skip-page-intro) main * {
   animation-play-state: paused !important;
 }
-html.page-ready main {
+html.page-ready:not(.skip-page-intro) main {
   transition: opacity .8s ease !important;
 }
 
@@ -278,6 +258,10 @@ html:not(.page-subpage) .topbar-nav.hero-nav-unit {
   transform-origin: center top;
   opacity: 0;
   animation: fadeUpHeroNav .9s .2s ease forwards;
+}
+html.skip-nav-intro:not(.page-subpage) .topbar-nav.hero-nav-unit {
+  opacity: 1;
+  animation: none;
 }
 html:not(.page-subpage) .topbar-nav.hero-nav-unit .topbar-nav-link {
   white-space: normal;
@@ -802,6 +786,9 @@ html.skip-player-intro .player {
     animation: fadeUp .9s .2s ease forwards;
     margin-top: clamp(1.1rem, 2.8vh, 1.8rem);
     gap: .6rem .75rem;
+  }
+  html.skip-nav-intro:not(.page-subpage) .topbar-nav.hero-nav-unit {
+    animation: none;
   }
   html:not(.page-subpage) .topbar-nav.hero-nav-unit .topbar-nav-link {
     font-size: clamp(.56rem, 2.35vw, .68rem);

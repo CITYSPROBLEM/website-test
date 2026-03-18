@@ -37,6 +37,10 @@
   root.classList.add("is-" + browser);
   if (sessionStorage.getItem("playerIntroSeen")) root.classList.add("skip-player-intro");
   else sessionStorage.setItem("playerIntroSeen", "1");
+  if (sessionStorage.getItem("navIntroSeen")) root.classList.add("skip-nav-intro");
+  else sessionStorage.setItem("navIntroSeen", "1");
+  if (sessionStorage.getItem("pageIntroSeen")) root.classList.add("skip-page-intro");
+  else sessionStorage.setItem("pageIntroSeen", "1");
   var forceStyle = document.createElement("style");
   forceStyle.setAttribute("data-force-cursor", "1");
   forceStyle.textContent = "html,body,*{cursor:none!important;caret-color:transparent!important;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;}";
@@ -47,14 +51,14 @@
   }, { once: true });
 })();
 </script>
-<link rel="stylesheet" href="styles.css?v=20260316z">
+<link rel="stylesheet" href="styles.css?v=20260316ag">
 <script>
 (function(){
   var b = document.documentElement.dataset.browser;
   if (b !== "safari" && b !== "chrome" && b !== "firefox") return;
   var link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "styles." + b + ".css?v=20260316z";
+  link.href = "styles." + b + ".css?v=20260317d";
   document.head.appendChild(link);
 })();
 </script>
@@ -178,14 +182,14 @@
 
 <div class="tap-hint" id="tapHint"></div>
 
-<script src="SONGS/tracks.js?v=20260309"></script>
-<script src="script.js?v=20260316z"></script>
+<script src="SONGS/tracks.js?v=20260317d"></script>
+<script src="script.js?v=20260317h"></script>
 <script>
 (function(){
   var b = document.documentElement.dataset.browser;
   if (b !== "safari" && b !== "chrome" && b !== "firefox") return;
   var script = document.createElement("script");
-  script.src = "script." + b + ".js?v=20260316z";
+  script.src = "script." + b + ".js?v=20260317d";
   document.body.appendChild(script);
 })();
 </script>
