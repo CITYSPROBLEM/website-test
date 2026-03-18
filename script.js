@@ -1234,7 +1234,7 @@ let defaultCenterTarget = infoSection || pastShowsSection || null;
 let centerScrollTarget = defaultCenterTarget;
 
 function syncCenterScrollSpacer(targetEl = centerScrollTarget || defaultCenterTarget) {
-  if (!mainEl || !targetEl || !targetEl.isConnected) {
+  if (!mainEl || !targetEl || !targetEl.isConnected || targetEl.hidden) {
     document.documentElement.style.setProperty('--info-scroll-spacer', '0px');
     return;
   }
@@ -1885,6 +1885,7 @@ function initMagneticAndTilt() {
   });
 }
 initMagneticAndTilt();
+initBookingScrollClamp();
 
 /* ── soft-nav page re-init ──────────────────────────────────────── */
 function initPageContent() {
@@ -1926,27 +1927,35 @@ function initPageContent() {
   initBookingScrollClamp();
 }
 
-/* ── booking page: clamp scroll so newsletter section centers ── */
+/* ── booking page: limit scroll so newsletter centers at max scroll (mobile) ── */
 function initBookingScrollClamp() {
   if (!isCoarsePointer) return;
   if (!document.documentElement.classList.contains('page-booking')) return;
   const newsletter = document.getElementById('newsletterSection');
-  if (!newsletter) return;
-  const sig = _pageContentAbort?.signal;
-  const playerH = document.getElementById('player')?.offsetHeight || 56;
-  const topbarH = 72;
+  if (!newsletter || !mainEl) return;
 
-  function clampScroll() {
-    const rect = newsletter.getBoundingClientRect();
-    const sectionCenter = rect.top + rect.height / 2;
-    const viewCenter = (topbarH + window.innerHeight - playerH) / 2;
-    /* max scroll = the scroll position that puts newsletter center at viewport center */
-    const maxScroll = window.scrollY + sectionCenter - viewCenter;
-    if (window.scrollY > maxScroll) window.scrollTo(0, maxScroll);
+  function recalc() {
+    /* reset for measurement */
+    newsletter.style.minHeight = '0';
+    mainEl.style.paddingBottom = '';
+    /* kill the scroll-spacer pseudo-element on booking page */
+    document.documentElement.style.setProperty('--info-scroll-spacer', '0px');
+
+    const playerH = document.getElementById('player')?.offsetHeight || 56;
+    const topbarH = 72;
+    const viewH = window.innerHeight - topbarH - playerH;
+    const nlH = newsletter.offsetHeight;
+
+    /* bottom padding that makes max-scroll land with newsletter centered
+       playerH is added because padding lives in document flow but player is fixed */
+    const pad = Math.max(0, viewH / 2 - nlH / 2 + playerH);
+    mainEl.style.paddingBottom = pad + 'px';
   }
 
-  window.addEventListener('scroll', clampScroll, { passive: false, signal: sig });
-  clampScroll();
+  recalc();
+  const sig = _pageContentAbort?.signal;
+  window.addEventListener('resize', recalc, { passive: true, signal: sig });
+  document.fonts.ready.then(recalc);
 }
 
 document.addEventListener('softnav:complete', initPageContent);
