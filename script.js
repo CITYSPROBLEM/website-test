@@ -51,6 +51,9 @@ function syncNavPlacement() {
       clone.classList.remove('topbar-nav-hidden');
       clone.classList.add('hero-nav-clone', 'hero-nav-unit');
       clone.removeAttribute('aria-label');
+      /* always animate the clone in, regardless of skip-nav-intro */
+      clone.style.opacity = '0';
+      clone.style.animation = 'fadeUp .9s .2s ease forwards';
       heroEl.appendChild(clone);
       return;
     }
@@ -113,8 +116,15 @@ async function softNavigate(url, replace = false, force = false) {
     }
     curMain.replaceWith(newMain);
     syncNavPlacement();
-    forceRevealMain(newMain);
-    requestAnimationFrame(() => forceRevealMain(document.querySelector('main')));
+    /* fade in new content instead of instant reveal */
+    newMain.style.opacity = '0';
+    newMain.style.visibility = 'visible';
+    newMain.style.display = '';
+    newMain.hidden = false;
+    requestAnimationFrame(() => {
+      newMain.style.transition = 'opacity .5s ease';
+      newMain.style.opacity = '1';
+    });
     if (replace) history.replaceState({}, '', target.href);
     else history.pushState({}, '', target.href);
     setActiveTopbarLink(target.href);
