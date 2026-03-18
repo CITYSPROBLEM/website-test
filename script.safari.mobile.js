@@ -64,15 +64,6 @@
       el.style.contentVisibility = 'auto';
       el.style.containIntrinsicSize = '1px 800px';
     });
-
-    var featuredImg = document.querySelector('.featured-release .featured-art-img');
-    if (!featuredImg) return;
-    featuredImg.loading = 'eager';
-    featuredImg.decoding = 'sync';
-    if (featuredImg.src.indexOf('IMAGES/im-your-love-1400.jpg') === -1) {
-      featuredImg.srcset = '';
-      featuredImg.src = 'IMAGES/im-your-love-1400.jpg';
-    }
   }
 
   applySafariMobileOptimizations();
