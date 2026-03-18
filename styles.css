@@ -408,7 +408,6 @@ html:not(.page-subpage) .hero {
   scrollbar-color: rgba(0,212,255,.3) transparent;
   */
 }
-.featured-release,
 .releases-section,
 .info-wrap,
 .dates-wrap,
@@ -1266,7 +1265,6 @@ html.skip-player-intro .player {
 }
 
 /* Render-heavy sections are skipped until close to viewport. */
-.featured-release,
 .releases-section,
 .dates-section,
 .portfolio-section {
@@ -1297,20 +1295,22 @@ html.skip-player-intro .player {
 .featured-artwork-wrap {
   width: clamp(140px, 35vw, 340px);
   flex: 0 1 clamp(140px, 35vw, 340px);
+  display: block;
+  line-height: 0;
   transform-style: preserve-3d;
   transition: transform .25s ease-out;
 }
 .featured-artwork-wrap picture {
   display: block;
   width: 100%;
-  aspect-ratio: 1 / 1;
   height: auto;
   line-height: 0;
 }
 .featured-art-img {
   width: 100%;
   height: auto;
-  aspect-ratio: 1 / 1;
+  min-height: 0;
+  max-height: none;
   display: block;
   border: 1px solid rgba(0,212,255,.14);
   object-fit: contain;
