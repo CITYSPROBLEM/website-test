@@ -53,7 +53,7 @@ function syncNavPlacement() {
       clone.removeAttribute('aria-label');
       /* always animate the clone in, regardless of skip-nav-intro */
       clone.style.opacity = '0';
-      clone.style.animation = 'fadeUpHeroNav .9s .2s ease forwards';
+      clone.style.animation = 'fadeUp .9s .2s ease forwards';
       heroEl.appendChild(clone);
       return;
     }

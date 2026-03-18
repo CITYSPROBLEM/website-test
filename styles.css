@@ -788,9 +788,8 @@ html.skip-player-intro .player {
     align-self: center;
     text-align: center;
     position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: fadeUpHeroNav .9s .2s ease forwards;
+    transform: none;
+    animation: fadeUp .9s .2s ease forwards;
     margin: clamp(1.1rem, 2.8vh, 1.8rem) auto 0;
     gap: .6rem .75rem;
   }
@@ -798,8 +797,7 @@ html.skip-player-intro .player {
   html:not(.page-subpage) .hero .topbar-nav.hero-nav-unit {
     width: min(95vw, 520px);
     max-width: 95vw;
-    left: 50%;
-    transform: translateX(-50%);
+    transform: none;
   }
   html.skip-nav-intro:not(.page-subpage) .topbar-nav.hero-nav-unit {
     animation: none;
