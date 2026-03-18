@@ -1904,6 +1904,41 @@ function initMagneticAndTilt() {
 }
 initMagneticAndTilt();
 
+/* ── music featured artwork crop guard (soft-nav + Safari mobile) ───────── */
+function fixMusicFeaturedArtworkCrop() {
+  if (!document.documentElement.classList.contains('page-music')) return;
+  const wrap = document.querySelector('.featured-artwork-wrap');
+  const img = document.querySelector('.featured-art-img');
+  if (!wrap || !img) return;
+
+  function applyLayoutGuard() {
+    wrap.style.overflow = 'visible';
+    wrap.style.height = 'auto';
+    img.style.display = 'block';
+    img.style.width = '100%';
+    img.style.height = 'auto';
+    img.style.maxHeight = 'none';
+    img.style.objectFit = 'contain';
+
+    const wrapWidth = wrap.getBoundingClientRect().width;
+    if (wrapWidth > 0) {
+      const ratio = (img.naturalWidth > 0 && img.naturalHeight > 0)
+        ? (img.naturalHeight / img.naturalWidth)
+        : 1;
+      wrap.style.minHeight = Math.round(wrapWidth * ratio) + 'px';
+    }
+  }
+
+  applyLayoutGuard();
+  requestAnimationFrame(() => requestAnimationFrame(applyLayoutGuard));
+  if (!img.complete) {
+    img.addEventListener('load', () => {
+      requestAnimationFrame(() => requestAnimationFrame(applyLayoutGuard));
+    }, { once: true });
+  }
+}
+fixMusicFeaturedArtworkCrop();
+
 /* ── soft-nav page re-init ──────────────────────────────────────── */
 function initPageContent() {
   /* abort previous page-content listeners (window/document) */
@@ -1940,6 +1975,7 @@ function initPageContent() {
   initDateWidthsAndHoverScramble();
   initPastShows();
   initMagneticAndTilt();
+  fixMusicFeaturedArtworkCrop();
   syncPlayerWidth();
 }
 
