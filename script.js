@@ -194,6 +194,19 @@ const splashReady = (function() {
 /* lock background height once so iOS toolbar resize doesn't cause zoom */
 document.documentElement.style.setProperty('--bg-h', window.innerHeight + 'px');
 
+/* recenter content when iOS dynamic toolbar resizes */
+if (window.visualViewport) {
+  let lastVVH = window.visualViewport.height;
+  window.visualViewport.addEventListener('resize', () => {
+    const newH = window.visualViewport.height;
+    const delta = newH - lastVVH;
+    lastVVH = newH;
+    if (Math.abs(delta) < 2) return;
+    /* shift scroll to compensate: toolbar grew → viewport shrank → scroll down, and vice versa */
+    window.scrollBy(0, -(delta / 2));
+  });
+}
+
 /* cursor */
 const cur  = document.getElementById('cur');
 const ring = document.getElementById('cur-ring');
