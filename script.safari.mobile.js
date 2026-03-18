@@ -52,7 +52,13 @@
     animationObserver.observe(el);
   });
 
-  var heavySections = '.info-section, .featured-wrap, .releases-section, .dates-wrap, .portfolio-section';
+  var featuredWrap = document.querySelector('.featured-wrap');
+  if (featuredWrap) {
+    featuredWrap.style.contentVisibility = 'visible';
+    featuredWrap.style.containIntrinsicSize = 'auto';
+  }
+
+  var heavySections = '.info-section, .releases-section, .dates-wrap, .portfolio-section';
   document.querySelectorAll(heavySections).forEach(function (el) {
     el.style.contentVisibility = 'auto';
     el.style.containIntrinsicSize = '1px 800px';

@@ -1304,12 +1304,13 @@ html.skip-player-intro .player {
   display: block;
   width: 100%;
   aspect-ratio: 1 / 1;
+  height: auto;
   line-height: 0;
 }
 .featured-art-img {
   width: 100%;
-  height: 100%;
-  min-height: 0;
+  height: auto;
+  aspect-ratio: 1 / 1;
   display: block;
   border: 1px solid rgba(0,212,255,.14);
   object-fit: contain;
@@ -1861,7 +1862,13 @@ html.skip-player-intro .player {
 
 /* ── mobile adjustments for new sections ─────────── */
 @media (max-width: 768px) {
-  .featured-release { padding: 3rem 1rem; max-width: 100vw; }
+  .featured-release {
+    padding: 3rem 1rem;
+    max-width: 100vw;
+    content-visibility: visible;
+    contain-intrinsic-block-size: auto;
+    contain-intrinsic-size: auto;
+  }
   .featured-inner {
     flex-direction: column;
     gap: 1.5rem;
