@@ -37,10 +37,6 @@
     });
   }, { threshold: 0 });
 
-  document.querySelectorAll('.ticker').forEach(function (ticker) {
-    tickerObserver.observe(ticker);
-  });
-
   var pausableSelector = '.scroll-arrow, .topbar-flyer, .booking-signal-card, .player-track-name, h1';
   var animationObserver = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
@@ -48,24 +44,29 @@
     });
   }, { threshold: 0 });
 
-  document.querySelectorAll(pausableSelector).forEach(function (el) {
-    animationObserver.observe(el);
-  });
+  function applySafariMobileOptimizations() {
+    document.querySelectorAll('.ticker').forEach(function (ticker) {
+      tickerObserver.observe(ticker);
+    });
 
-  var featuredWrap = document.querySelector('.featured-wrap');
-  if (featuredWrap) {
-    featuredWrap.style.contentVisibility = 'visible';
-    featuredWrap.style.containIntrinsicSize = 'auto';
-  }
+    document.querySelectorAll(pausableSelector).forEach(function (el) {
+      animationObserver.observe(el);
+    });
 
-  var heavySections = '.info-section, .releases-section, .dates-wrap, .portfolio-section';
-  document.querySelectorAll(heavySections).forEach(function (el) {
-    el.style.contentVisibility = 'auto';
-    el.style.containIntrinsicSize = '1px 800px';
-  });
+    var featuredWrap = document.querySelector('.featured-wrap');
+    if (featuredWrap) {
+      featuredWrap.style.contentVisibility = 'visible';
+      featuredWrap.style.containIntrinsicSize = 'auto';
+    }
 
-  var featuredImg = document.querySelector('.featured-release .featured-art-img');
-  if (featuredImg) {
+    var heavySections = '.info-section, .releases-section, .dates-wrap, .portfolio-section';
+    document.querySelectorAll(heavySections).forEach(function (el) {
+      el.style.contentVisibility = 'auto';
+      el.style.containIntrinsicSize = '1px 800px';
+    });
+
+    var featuredImg = document.querySelector('.featured-release .featured-art-img');
+    if (!featuredImg) return;
     featuredImg.loading = 'eager';
     featuredImg.decoding = 'sync';
     if (featuredImg.src.indexOf('IMAGES/im-your-love-1400.jpg') === -1) {
@@ -73,4 +74,7 @@
       featuredImg.src = 'IMAGES/im-your-love-1400.jpg';
     }
   }
+
+  applySafariMobileOptimizations();
+  document.addEventListener('softnav:complete', applySafariMobileOptimizations);
 })();
