@@ -191,6 +191,9 @@ const splashReady = (function() {
   });
 })();
 
+/* lock background height once so iOS toolbar resize doesn't cause zoom */
+document.documentElement.style.setProperty('--bg-h', window.innerHeight + 'px');
+
 /* cursor */
 const cur  = document.getElementById('cur');
 const ring = document.getElementById('cur-ring');
