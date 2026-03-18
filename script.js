@@ -1923,6 +1923,30 @@ function initPageContent() {
   initPastShows();
   initMagneticAndTilt();
   syncPlayerWidth();
+  initBookingScrollClamp();
+}
+
+/* ── booking page: clamp scroll so newsletter section centers ── */
+function initBookingScrollClamp() {
+  if (!isCoarsePointer) return;
+  if (!document.documentElement.classList.contains('page-booking')) return;
+  const newsletter = document.getElementById('newsletterSection');
+  if (!newsletter) return;
+  const sig = _pageContentAbort?.signal;
+  const playerH = document.getElementById('player')?.offsetHeight || 56;
+  const topbarH = 72;
+
+  function clampScroll() {
+    const rect = newsletter.getBoundingClientRect();
+    const sectionCenter = rect.top + rect.height / 2;
+    const viewCenter = (topbarH + window.innerHeight - playerH) / 2;
+    /* max scroll = the scroll position that puts newsletter center at viewport center */
+    const maxScroll = window.scrollY + sectionCenter - viewCenter;
+    if (window.scrollY > maxScroll) window.scrollTo(0, maxScroll);
+  }
+
+  window.addEventListener('scroll', clampScroll, { passive: false, signal: sig });
+  clampScroll();
 }
 
 document.addEventListener('softnav:complete', initPageContent);
