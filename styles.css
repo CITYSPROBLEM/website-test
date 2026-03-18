@@ -786,7 +786,7 @@ html.skip-player-intro .player {
     max-width: 95vw;
     transform: none;
     animation: fadeUp .9s .2s ease forwards;
-    margin-top: clamp(1.1rem, 2.8vh, 1.8rem);
+    margin: clamp(1.1rem, 2.8vh, 1.8rem) auto 0;
     gap: .6rem .75rem;
   }
   html.skip-nav-intro:not(.page-subpage) .topbar-nav.hero-nav-unit {
@@ -797,6 +797,9 @@ html.skip-player-intro .player {
     letter-spacing: .14em;
     white-space: nowrap;
   }
+
+  /* safety: some mobile UAs don't match coarse-pointer media query reliably */
+  #cur, #cur-ring { display: none !important; }
 
   main {
     padding: 72px 1.25rem 4rem;

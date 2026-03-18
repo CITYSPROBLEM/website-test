@@ -1,0 +1,64 @@
+/* Safari mobile-only optimization layer (additive to styles.css mobile rules) */
+html.is-safari.mobile-optimized .topbar,
+html.is-safari.mobile-optimized .player {
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
+html.is-safari.mobile-optimized .info-section,
+html.is-safari.mobile-optimized .portfolio-card,
+html.is-safari.mobile-optimized .quote-card {
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+html.is-safari.mobile-optimized .aurora {
+  filter: blur(30px);
+  opacity: .34;
+}
+
+html.is-safari.mobile-optimized .featured-release::before,
+html.is-safari.mobile-optimized .releases-section::before {
+  filter: blur(32px);
+  opacity: .46;
+}
+
+html.is-safari.mobile-optimized .glitch-wrap::before,
+html.is-safari.mobile-optimized .glitch-wrap::after {
+  opacity: .42;
+}
+
+/* defer heavy visual layers until first interaction */
+html.is-safari.mobile-optimized.mobile-effects-deferred .aurora,
+html.is-safari.mobile-optimized.mobile-effects-deferred .featured-release::before,
+html.is-safari.mobile-optimized.mobile-effects-deferred .releases-section::before,
+html.is-safari.mobile-optimized.mobile-effects-deferred .glitch-wrap::before,
+html.is-safari.mobile-optimized.mobile-effects-deferred .glitch-wrap::after {
+  opacity: 0 !important;
+  filter: none !important;
+}
+
+/* pause non-critical infinite animations when offscreen */
+html.is-safari.mobile-optimized .offscreen-anim,
+html.is-safari.mobile-optimized .offscreen-anim::before,
+html.is-safari.mobile-optimized .offscreen-anim::after,
+html.is-safari.mobile-optimized .offscreen-anim * {
+  animation-play-state: paused !important;
+}
+
+/* low-memory fallback: disable expensive blurs, keep layout/features intact */
+html.is-safari.mobile-optimized.low-memory-mobile .topbar,
+html.is-safari.mobile-optimized.low-memory-mobile .player,
+html.is-safari.mobile-optimized.low-memory-mobile .info-section,
+html.is-safari.mobile-optimized.low-memory-mobile .portfolio-card,
+html.is-safari.mobile-optimized.low-memory-mobile .quote-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.is-safari.mobile-optimized.low-memory-mobile .featured-release::before,
+html.is-safari.mobile-optimized.low-memory-mobile .releases-section::before,
+html.is-safari.mobile-optimized.low-memory-mobile .aurora {
+  filter: none !important;
+  opacity: .24 !important;
+}

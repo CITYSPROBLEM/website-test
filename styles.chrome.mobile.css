@@ -1,0 +1,63 @@
+/* Chrome mobile-only optimization layer (additive to styles.css mobile rules) */
+html.is-chrome.mobile-optimized .topbar,
+html.is-chrome.mobile-optimized .player {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.is-chrome.mobile-optimized .info-section,
+html.is-chrome.mobile-optimized .portfolio-card,
+html.is-chrome.mobile-optimized .quote-card {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* avoid persistent compositor promotion pressure on constrained GPUs */
+html.is-chrome.mobile-optimized .ticker-track,
+html.is-chrome.mobile-optimized .release-card,
+html.is-chrome.mobile-optimized .featured-artwork-wrap,
+html.is-chrome.mobile-optimized .aurora {
+  will-change: auto;
+}
+
+html.is-chrome.mobile-optimized .aurora {
+  opacity: .28;
+}
+
+html.is-chrome.mobile-optimized .featured-release::before,
+html.is-chrome.mobile-optimized .releases-section::before {
+  filter: blur(36px);
+  opacity: .42;
+}
+
+/* defer heavy visual layers until first interaction */
+html.is-chrome.mobile-optimized.mobile-effects-deferred .aurora,
+html.is-chrome.mobile-optimized.mobile-effects-deferred .featured-release::before,
+html.is-chrome.mobile-optimized.mobile-effects-deferred .releases-section::before {
+  opacity: 0 !important;
+  filter: none !important;
+}
+
+/* pause non-critical infinite animations when offscreen */
+html.is-chrome.mobile-optimized .offscreen-anim,
+html.is-chrome.mobile-optimized .offscreen-anim::before,
+html.is-chrome.mobile-optimized .offscreen-anim::after,
+html.is-chrome.mobile-optimized .offscreen-anim * {
+  animation-play-state: paused !important;
+}
+
+/* low-memory fallback: disable expensive blurs, keep layout/features intact */
+html.is-chrome.mobile-optimized.low-memory-mobile .topbar,
+html.is-chrome.mobile-optimized.low-memory-mobile .player,
+html.is-chrome.mobile-optimized.low-memory-mobile .info-section,
+html.is-chrome.mobile-optimized.low-memory-mobile .portfolio-card,
+html.is-chrome.mobile-optimized.low-memory-mobile .quote-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.is-chrome.mobile-optimized.low-memory-mobile .featured-release::before,
+html.is-chrome.mobile-optimized.low-memory-mobile .releases-section::before {
+  filter: none !important;
+  opacity: .24 !important;
+}

@@ -202,15 +202,23 @@ const browser = document.documentElement.dataset.browser || 'other';
 const isSafari = browser === 'safari';
 const isChrome = browser === 'chrome';
 const isFirefox = browser === 'firefox';
+const isMobileViewport = isCoarsePointer || window.innerWidth <= 768;
 const enableHeavyPointerFx = !isCoarsePointer && (isChrome || isSafari);
 const enableAnimatedGrain = isChrome || isSafari;
-const visualizerFrameStride = isFirefox ? 2 : 1;
+const visualizerFrameStride = isMobileViewport ? (isFirefox ? 4 : 3) : (isFirefox ? 2 : 1);
+const grainFrameStride = isMobileViewport ? 18 : 10;
 const LINK_HOVER_SELECTOR = 'a, button, .topbar-logo, .player-progress, .player-vol-slider, .player-track-name, .glitch-wrap, .release-card, .featured-link';
 const scheduleNonCritical = window.requestIdleCallback
   ? fn => window.requestIdleCallback(fn, { timeout: 1200 })
   : fn => setTimeout(fn, 220);
 let mx = 0, my = 0, rx = 0, ry = 0;
 let cursorDirty = false;
+
+if (isMobileViewport) {
+  cur?.remove();
+  ring?.remove();
+}
+
 if (!isCoarsePointer) {
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
@@ -1945,7 +1953,7 @@ document.addEventListener('softnav:complete', initPageContent);
         if (Math.abs(mx - rx) < 0.1 && Math.abs(my - ry) < 0.1) cursorDirty = false;
       }
     }
-    if (enableAnimatedGrain && ++grainFrame % 10 === 0)
+    if (enableAnimatedGrain && ++grainFrame % grainFrameStride === 0)
       turbEl.setAttribute('seed', (noiseSeed = (noiseSeed + 1) % 200));
     if (window.shouldDrawVisualizer?.()) window.drawVisualizer();
     tickRafId = requestAnimationFrame(tick);

@@ -51,15 +51,22 @@
   }, { once: true });
 })();
 </script>
-<link rel="stylesheet" href="styles.css?v=20260318e">
+<link rel="stylesheet" href="styles.css?v=20260318f">
 <script>
 (function(){
   var b = document.documentElement.dataset.browser;
   if (b !== "safari" && b !== "chrome" && b !== "firefox") return;
   var link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "styles." + b + ".css?v=20260317k";
+  link.href = "styles." + b + ".css?v=20260318f";
   document.head.appendChild(link);
+
+  var isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches || window.innerWidth <= 768;
+  if (!isMobile || (b !== "safari" && b !== "chrome")) return;
+  var mobileLink = document.createElement("link");
+  mobileLink.rel = "stylesheet";
+  mobileLink.href = "styles." + b + ".mobile.css?v=20260318b";
+  document.head.appendChild(mobileLink);
 })();
 </script>
 <script type="application/ld+json">
@@ -164,14 +171,20 @@
 <div class="tap-hint" id="tapHint"></div>
 
 <script src="SONGS/tracks.js?v=20260317k"></script>
-<script src="script.js?v=20260318e"></script>
+<script src="script.js?v=20260318g"></script>
 <script>
 (function(){
   var b = document.documentElement.dataset.browser;
   if (b !== "safari" && b !== "chrome" && b !== "firefox") return;
   var script = document.createElement("script");
-  script.src = "script." + b + ".js?v=20260317k";
+  script.src = "script." + b + ".js?v=20260318f";
   document.body.appendChild(script);
+
+  var isMobile = window.matchMedia("(hover: none) and (pointer: coarse)").matches || window.innerWidth <= 768;
+  if (!isMobile || (b !== "safari" && b !== "chrome")) return;
+  var mobileScript = document.createElement("script");
+  mobileScript.src = "script." + b + ".mobile.js?v=20260318b";
+  document.body.appendChild(mobileScript);
 })();
 </script>
 </body>
