@@ -790,7 +790,7 @@ html.skip-player-intro .player {
     position: relative;
     left: 50%;
     transform: translateX(-50%);
-    animation: fadeUp .9s .2s ease forwards;
+    animation: fadeUpHeroNav .9s .2s ease forwards;
     margin: clamp(1.1rem, 2.8vh, 1.8rem) auto 0;
     gap: .6rem .75rem;
   }
