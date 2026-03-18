@@ -1309,33 +1309,18 @@ function initInfoSection() {
     const infoLabelOrig = infoLabelEls.map(el => el.textContent);
     let infoLoops = null;
 
-    /* prep: box + children start invisible */
+    /* prep: entire section starts invisible */
     infoSection.style.opacity = '0';
     infoSection.style.transform = 'translateY(12px)';
     infoSection.style.transition = 'none';
-    const staggerChildren = Array.from(infoSection.querySelectorAll('.info-block'));
-    staggerChildren.forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(12px)';
-      el.style.transition = 'none';
-    });
 
     function revealInfo() {
       infoLoops = infoLabelEls.map((el, i) => scrambleLoop(infoLabelOrig[i], t => { el.textContent = t; }, 30));
-      /* fade in the box itself first */
+      /* fade everything in together */
       infoSection.style.transition = 'opacity .5s ease, transform .5s ease';
       infoSection.style.opacity = '1';
       infoSection.style.transform = 'translateY(0)';
       requestAnimationFrame(() => infoSection.classList.add('visible'));
-
-      /* stagger info-blocks in */
-      staggerChildren.forEach((el, i) => {
-        setTimeout(() => {
-          el.style.transition = 'opacity .5s ease, transform .5s ease';
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-        }, i * 80);
-      });
 
       let settled = false;
       function onFadeInEnd() {
