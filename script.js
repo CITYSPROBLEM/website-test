@@ -264,7 +264,7 @@ const isFirefox = browser === 'firefox';
 const isMobileViewport = isCoarsePointer || window.innerWidth <= 768;
 const enableHeavyPointerFx = !isCoarsePointer && (isChrome || isSafari);
 const enableAnimatedGrain = isChrome || isSafari;
-const visualizerFrameStride = isMobileViewport ? (isFirefox ? 8 : 7) : (isFirefox ? 4 : 3);
+const visualizerFrameStride = isMobileViewport ? (isFirefox ? 4 : 3) : 1;
 const grainFrameStride = isMobileViewport ? 18 : 10;
 const LINK_HOVER_SELECTOR = 'a, button, .topbar-logo, .player-progress, .player-vol-slider, .player-track-name, .glitch-wrap, .release-card, .featured-link';
 const scheduleNonCritical = window.requestIdleCallback
@@ -1113,7 +1113,7 @@ window.addEventListener('resize', () => {
 {
   const vizCanvas = document.getElementById('visualizer');
   const vizCtx = vizCanvas.getContext('2d');
-  const VIZ_TARGET_BINS = 500;
+  const VIZ_TARGET_BINS = 100;
   const VIZ_HEIGHT_GAMMA = 0.62;
   const VIZ_HEIGHT_BOOST = 0.82;
   const VIZ_TRANSIENT_BOOST = 1.05;
