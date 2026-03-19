@@ -1186,12 +1186,15 @@ window.addEventListener('resize', () => {
     const minVisibleH = H * VIZ_MIN_VISIBLE_HEIGHT_FRAC;
     for (let i = 0; i < bars; i++) {
       const t = bars <= 1 ? 0 : i / (bars - 1);
-      const bin = minBin + Math.round(t * (availableBins - 1));
-      const raw = dataArray[bin] / 255;
+      const pos = t * (availableBins - 1);
+      const leftBin = minBin + Math.floor(pos);
+      const rightBin = Math.min(maxBin, leftBin + 1);
+      const frac = pos - Math.floor(pos);
+      const raw = ((dataArray[leftBin] * (1 - frac)) + (dataArray[rightBin] * frac)) / 255;
       const v = raw <= VIZ_NOISE_GATE ? 0 : (raw - VIZ_NOISE_GATE) / (1 - VIZ_NOISE_GATE);
-      const prev = prevData ? prevData[bin] : 0;
+      const prev = prevData ? ((prevData[leftBin] * (1 - frac)) + (prevData[rightBin] * frac)) : 0;
       const transient = Math.max(0, v - prev) * VIZ_TRANSIENT_BOOST;
-      if (prevData) prevData[bin] = v;
+      if (prevData) prevData[leftBin] = v;
       const shaped = Math.pow(v, VIZ_HEIGHT_GAMMA);
       const reactive = Math.min(1, shaped * VIZ_HEIGHT_BOOST + transient);
       const h = v > 0 ? Math.max(minVisibleH, reactive * H * VIZ_MAX_HEIGHT_FRAC) : 0;
