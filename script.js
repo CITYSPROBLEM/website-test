@@ -1140,7 +1140,7 @@ window.addEventListener('resize', () => {
     prevData = new Float32Array(analyser.frequencyBinCount);
     const hzPerBin = audioCtx.sampleRate / analyser.fftSize;
     vizMinBin = 0;
-    vizMaxBin = Math.min(analyser.frequencyBinCount - 1, Math.floor(16000 / hzPerBin));
+    vizMaxBin = Math.min(analyser.frequencyBinCount - 1, Math.floor(20000 / hzPerBin));
   }
 
   audio.addEventListener('play', initAudioContext, { once: true });
