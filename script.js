@@ -1113,7 +1113,7 @@ window.addEventListener('resize', () => {
 {
   const vizCanvas = document.getElementById('visualizer');
   const vizCtx = vizCanvas.getContext('2d');
-  const VIZ_TARGET_BINS = 100;
+  const VIZ_TARGET_BINS = 1000;
   const VIZ_HEIGHT_GAMMA = 0.62;
   const VIZ_HEIGHT_BOOST = 0.82;
   const VIZ_TRANSIENT_BOOST = 1.05;
