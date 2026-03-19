@@ -7,4 +7,5 @@ window.TRACKS = [
 { title: 'Luminary - Amsterdam (CITYSPROBLEM Remix)', file: 'Luminary_-_Amsterdam_(CITYSPROBLEM_Remix).opus' },
 { title: 'CITYSPROBLEM - Never Let Me Go', file: 'CITYSPROBLEM_-_Never_Let_Me_Go.opus' },
 { title: 'CITYSPROBLEM - I\'m Your Love', file: 'CITYSPROBLEM_-_I\'m_Your_Love.opus' },
+{ title: 'CITYSPROBLEM - Ljuset (The Light)', file: 'CITYSPROBLEM_-_Ljuset_(The_Light).opus' },
 ];
