@@ -1113,13 +1113,13 @@ window.addEventListener('resize', () => {
 {
   const vizCanvas = document.getElementById('visualizer');
   const vizCtx = vizCanvas.getContext('2d');
-  const VIZ_TARGET_BINS = 1000;
+  const VIZ_TARGET_BINS = 420;
   const VIZ_HEIGHT_GAMMA = 0.62;
-  const VIZ_HEIGHT_BOOST = 0.82;
+  const VIZ_HEIGHT_BOOST = 1.25;
   const VIZ_TRANSIENT_BOOST = 0.45;
-  const VIZ_MAX_HEIGHT_FRAC = 0.72;
+  const VIZ_MAX_HEIGHT_FRAC = 0.9;
   const VIZ_NOISE_GATE = 0.05;
-  const VIZ_MIN_VISIBLE_HEIGHT_FRAC = 0.003;
+  const VIZ_MIN_VISIBLE_HEIGHT_FRAC = 0.015;
   const VIZ_SPATIAL_SMOOTH_PASSES = 2;
   const VIZ_FRONT_WIDTH_SCALE = 1.0;
   const VIZ_BACK_WIDTH_SCALE = 1.0;
@@ -1244,10 +1244,10 @@ window.addEventListener('resize', () => {
       const backX = slotX + (slotW - backW) * 0.5;
       const frontX = slotX + (slotW - frontW) * 0.5;
 
-      vizCtx.fillStyle = 'rgba(0,125,165,0.92)';
+      vizCtx.fillStyle = 'rgba(0,140,190,0.95)';
       vizCtx.fillRect(backX, H - backH, backW, backH);
 
-      vizCtx.fillStyle = 'rgba(0,212,255,0.98)';
+      vizCtx.fillStyle = 'rgba(60,230,255,1)';
       vizCtx.fillRect(frontX, H - frontH, frontW, frontH);
     }
   };
