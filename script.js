@@ -1094,11 +1094,11 @@ window.addEventListener('resize', () => {
 {
   const vizCanvas = document.getElementById('visualizer');
   const vizCtx = vizCanvas.getContext('2d');
-  const VIZ_HEIGHT_GAMMA = 0.5;
-  const VIZ_HEIGHT_BOOST = 1.1;
-  const VIZ_TRANSIENT_BOOST = 1.6;
-  const VIZ_MAX_HEIGHT_FRAC = 0.86;
-  const VIZ_NOISE_GATE = 0.03;
+  const VIZ_HEIGHT_GAMMA = 0.62;
+  const VIZ_HEIGHT_BOOST = 0.82;
+  const VIZ_TRANSIENT_BOOST = 1.05;
+  const VIZ_MAX_HEIGHT_FRAC = 0.72;
+  const VIZ_NOISE_GATE = 0.05;
   const VIZ_MIN_VISIBLE_HEIGHT_FRAC = 0.003;
   let analyser = null, dataArray = null, prevData = null, audioCtxStarted = false;
   let vizMinBin = 0, vizMaxBin = 0;
@@ -1111,7 +1111,7 @@ window.addEventListener('resize', () => {
     const source = audioCtx.createMediaElementSource(audio);
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.04;
+    analyser.smoothingTimeConstant = 0.05;
     analyser.minDecibels = -96;
     analyser.maxDecibels = -16;
     source.connect(analyser);
