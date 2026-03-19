@@ -1128,6 +1128,7 @@ window.addEventListener('resize', () => {
   const VIZ_BACK_HEIGHT_SCALE = 0.46;
   const VIZ_BACK_SMOOTHING = 0.08;
   let analyser = null, dataArray = null, prevData = null, backData = null, audioCtxStarted = false;
+  let vizHzPerBin = 0;
   let vizReactive = null, vizScratch = null;
   let vizMinBin = 0, vizMaxBin = 0;
   let vizFrameCount = 0;
@@ -1148,6 +1149,7 @@ window.addEventListener('resize', () => {
     prevData = new Float32Array(analyser.frequencyBinCount);
     backData = new Float32Array(VIZ_TARGET_BINS);
     const hzPerBin = audioCtx.sampleRate / analyser.fftSize;
+    vizHzPerBin = hzPerBin;
     vizMinBin = 0;
     vizMaxBin = Math.min(analyser.frequencyBinCount - 1, Math.floor(20000 / hzPerBin));
   }
@@ -1235,8 +1237,10 @@ window.addEventListener('resize', () => {
     }
 
     for (let i = 0; i < bars; i++) {
-      const bassTaper = i < bars * 0.2 ? (0.72 + 0.28 * (i / (bars * 0.2))) : 1;
-      const reactiveRaw = reactiveView[i] * bassTaper;
+      const interpBin = (leftBin * (1 - frac)) + (rightBin * frac);
+      const hz = interpBin * vizHzPerBin;
+      const lowFreqRollOff = hz < 250 ? (0.35 + 0.65 * (hz / 250)) : 1;
+      const reactiveRaw = reactiveView[i] * lowFreqRollOff;
       const over = Math.max(0, reactiveRaw - VIZ_SOFT_KNEE_START);
       const compressed = over > 0 ? (over / (1 + over * 8.5)) : 0;
       const reactive = Math.min(
