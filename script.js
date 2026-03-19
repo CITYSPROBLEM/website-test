@@ -1184,10 +1184,12 @@ window.addEventListener('resize', () => {
     const bars = VIZ_TARGET_BINS;
     const barW = W / bars;
     const minVisibleH = H * VIZ_MIN_VISIBLE_HEIGHT_FRAC;
+    const logMin = Math.log(minBin + 1);
+    const logMax = Math.log(maxBin + 1);
     for (let i = 0; i < bars; i++) {
       const t = bars <= 1 ? 0 : i / (bars - 1);
-      const pos = t * (availableBins - 1);
-      const leftBin = minBin + Math.floor(pos);
+      const pos = Math.exp(logMin + t * (logMax - logMin)) - 1 - minBin;
+      const leftBin = minBin + Math.min(Math.floor(pos), availableBins - 1);
       const rightBin = Math.min(maxBin, leftBin + 1);
       const frac = pos - Math.floor(pos);
       const raw = ((dataArray[leftBin] * (1 - frac)) + (dataArray[rightBin] * frac)) / 255;
