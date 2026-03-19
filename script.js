@@ -1094,9 +1094,10 @@ window.addEventListener('resize', () => {
 {
   const vizCanvas = document.getElementById('visualizer');
   const vizCtx = vizCanvas.getContext('2d');
-  const VIZ_HEIGHT_GAMMA = 0.36;
-  const VIZ_HEIGHT_BOOST = 1.55;
-  const VIZ_TRANSIENT_BOOST = 2.8;
+  const VIZ_HEIGHT_GAMMA = 0.5;
+  const VIZ_HEIGHT_BOOST = 1.1;
+  const VIZ_TRANSIENT_BOOST = 1.6;
+  const VIZ_MAX_HEIGHT_FRAC = 0.86;
   const VIZ_NOISE_GATE = 0.03;
   const VIZ_MIN_VISIBLE_HEIGHT_FRAC = 0.003;
   let analyser = null, dataArray = null, prevData = null, audioCtxStarted = false;
@@ -1110,7 +1111,7 @@ window.addEventListener('resize', () => {
     const source = audioCtx.createMediaElementSource(audio);
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.08;
+    analyser.smoothingTimeConstant = 0.04;
     analyser.minDecibels = -96;
     analyser.maxDecibels = -16;
     source.connect(analyser);
@@ -1174,7 +1175,7 @@ window.addEventListener('resize', () => {
       if (prevData) prevData[bin] = v;
       const shaped = Math.pow(v, VIZ_HEIGHT_GAMMA);
       const reactive = Math.min(1, shaped * VIZ_HEIGHT_BOOST + transient);
-      const h = v > 0 ? Math.max(minVisibleH, reactive * H) : 0;
+      const h = v > 0 ? Math.max(minVisibleH, reactive * H * VIZ_MAX_HEIGHT_FRAC) : 0;
       vizCtx.fillStyle = `rgba(0,212,255,${0.12 + reactive * 0.44})`;
       vizCtx.fillRect(i * barW, H - h, barW - 1, h);
     }
