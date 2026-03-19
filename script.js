@@ -1120,7 +1120,7 @@ window.addEventListener('resize', () => {
   const VIZ_MAX_HEIGHT_FRAC = 0.72;
   const VIZ_NOISE_GATE = 0.05;
   const VIZ_MIN_VISIBLE_HEIGHT_FRAC = 0.003;
-  const VIZ_BAR_GAP_PX = 0.9;
+  const VIZ_BAR_GAP_PX = 1.6;
   let analyser = null, dataArray = null, prevData = null, audioCtxStarted = false;
   let vizMinBin = 0, vizMaxBin = 0;
   let vizFrameCount = 0;
@@ -1184,8 +1184,8 @@ window.addEventListener('resize', () => {
     const availableBins = Math.max(1, (maxBin - minBin + 1));
     const bars = VIZ_TARGET_BINS;
     const barW = W / bars;
-    const gap = Math.min(VIZ_BAR_GAP_PX, barW * 0.6);
-    const drawW = Math.max(0.35, barW - gap);
+    const gap = Math.min(VIZ_BAR_GAP_PX, barW * 0.78);
+    const drawW = Math.max(0.2, barW - gap);
     const minVisibleH = H * VIZ_MIN_VISIBLE_HEIGHT_FRAC;
     const logMin = Math.log(minBin + 1);
     const logMax = Math.log(maxBin + 1);
