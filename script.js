@@ -249,7 +249,7 @@ if (isMobileViewport) {
 }
 
 /* fallback for mobile browsers that report non-coarse pointers */
-if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && !window.matchMedia('(pointer: fine)').matches) {
   cur?.remove();
   ring?.remove();
 }
