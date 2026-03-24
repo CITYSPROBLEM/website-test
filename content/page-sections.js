@@ -6,7 +6,10 @@
 <p class="section-label">LATEST RELEASE</p>
       <div class="featured-inner">
         <div class="glitch-wrap featured-artwork-wrap">
-          <img class="featured-art-img" src="IMAGES/tomorrow-cover-1400.jpg" alt="Tomorrow" loading="eager" decoding="sync" width="1400" height="1400">
+          <picture>
+            <source srcset="IMAGES/tomorrow-cover-800.webp 800w, IMAGES/tomorrow-cover-1400.webp 1400w" sizes="(max-width: 768px) 70vw, 340px" type="image/webp">
+            <img class="featured-art-img" src="IMAGES/tomorrow-cover-1400.jpg" alt="Tomorrow" loading="eager" decoding="sync" width="1400" height="1400">
+          </picture>
         </div>
         <div class="featured-info">
           <p class="featured-title">TOMORROW</p>
