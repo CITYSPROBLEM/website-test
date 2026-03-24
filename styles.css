@@ -1289,7 +1289,7 @@ html.skip-player-intro .player {
 .featured-inner {
   display: flex;
   gap: clamp(1.5rem, 4vw, 3rem);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
 }
@@ -1341,7 +1341,7 @@ html.skip-player-intro .player {
   display: flex;
   flex-direction: column;
   gap: .6rem;
-  flex: 1 1 18rem;
+  flex: 1 1 0;
   min-width: min(18rem, 100%);
 }
 .featured-title {
