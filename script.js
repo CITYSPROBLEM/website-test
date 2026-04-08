@@ -85,10 +85,8 @@ function syncNavPlacement() {
     navEl.classList.remove('topbar-nav-hidden');
     if (!navEl.dataset.homeNavAnimated) {
       navEl.dataset.homeNavAnimated = '1';
-      navEl.style.opacity = '0';
-      navEl.style.animation = isCoarsePointer
-        ? 'fadeUp .9s .2s ease forwards'
-        : 'fadeUpHeroNav .9s .2s ease forwards';
+      navEl.style.opacity = '1';
+      navEl.style.animation = 'none';
       animDebugLog('hero-nav under hero');
     }
     return;
@@ -148,15 +146,11 @@ async function softNavigate(url, replace = false, force = false) {
     window.applyPageSections?.(document);
     window.applyPageInfo?.();
     syncNavPlacement();
-    /* fade in new content — force reflow so Safari sees the opacity:0 frame */
-    newMain.style.opacity = '0';
+    newMain.style.opacity = '1';
     newMain.style.transition = 'none';
     newMain.style.visibility = 'visible';
     newMain.style.display = '';
     newMain.hidden = false;
-    void newMain.offsetHeight;          /* flush layout */
-    newMain.style.transition = 'opacity .5s ease';
-    newMain.style.opacity = '1';
     if (replace) history.replaceState({}, '', target.href);
     else history.pushState({}, '', target.href);
     setActiveTopbarLink(target.href);
@@ -198,29 +192,9 @@ const pageReady = new Promise(resolve => {
 /* splash screen — only shows once per session */
 const splashReady = (function() {
   const splash = document.getElementById('splash');
-  if (!splash) return pageReady;
-  if (sessionStorage.getItem('splashDismissed')) {
-    splash.remove();
-    return pageReady;
-  }
-  document.documentElement.classList.add('splash-active');
-  const splashLogo = splash.querySelector('.splash-logo');
-  return new Promise(resolve => {
-    splashLogo.addEventListener('click', function dismiss() {
-      splashLogo.removeEventListener('click', dismiss);
-      sessionStorage.setItem('splashDismissed', '1');
-      splash.classList.add('dismissed');
-      document.documentElement.classList.remove('splash-active');
-      /* fade in topbar */
-      const topbar = document.querySelector('.topbar');
-      if (topbar) {
-        topbar.style.transition = 'opacity .9s ease';
-        topbar.style.opacity = '1';
-      }
-      splash.addEventListener('transitionend', () => splash.remove());
-      resolve();
-    });
-  });
+  if (splash) splash.remove();
+  document.documentElement.classList.remove('splash-active');
+  return pageReady;
 })();
 
 /* cursor */
@@ -365,20 +339,8 @@ function scrambleSnapshot(original) {
 }
 
 function scrambleLoop(original, setText, stepMs = 50, maxChars = Infinity) {
-  const plan = scramblePlan(original, maxChars);
-  const originalLen = original.length;
-  let rafId, last = 0;
-  function frame(ts) {
-    if (ts - last >= stepMs) {
-      last = ts;
-      setText(fixedLen(original.split('').map((c, i) =>
-        c === ' ' || !plan.ranks.has(i) ? c : randGlyph(c)
-      ).join(''), originalLen));
-    }
-    rafId = requestAnimationFrame(frame);
-  }
-  rafId = requestAnimationFrame(frame);
-  return () => cancelAnimationFrame(rafId);
+  setText(original);
+  return () => {};
 }
 
 function scrambleResolve(original, setText, steps = 16, stepMs = 50, onComplete, maxChars = Infinity) {
@@ -386,30 +348,9 @@ function scrambleResolve(original, setText, steps = 16, stepMs = 50, onComplete,
 }
 
 function scrambleResolveForMs(original, setText, durationMs = SCRAMBLE_SETTLE_MS, onComplete, maxChars = Infinity) {
-  const plan = scramblePlan(original, maxChars);
-  const originalLen = original.length;
-  const safeDuration = Math.max(1, durationMs);
-  const start = performance.now();
-  let lastTick = 0;
-  let rafId = 0;
-  function frame(ts) {
-    if (ts - lastTick < SCRAMBLE_TICK_MS) {
-      rafId = requestAnimationFrame(frame);
-      return;
-    }
-    lastTick = ts;
-    const progress = Math.min(1, (ts - start) / safeDuration);
-    const resolvedCount = Math.floor(progress * plan.count);
-    setText(fixedLen(original.split('').map((c, i) => {
-      if (c === ' ') return ' ';
-      if (!plan.ranks.has(i) || plan.ranks.get(i) < resolvedCount) return c;
-      return randGlyph(c);
-    }).join(''), originalLen));
-    if (progress >= 1) { setText(original); onComplete?.(); return; }
-    rafId = requestAnimationFrame(frame);
-  }
-  rafId = requestAnimationFrame(frame);
-  return () => cancelAnimationFrame(rafId);
+  setText(original);
+  onComplete?.();
+  return () => {};
 }
 
 /* fixed global settle timing for all scramble resolutions */
@@ -425,19 +366,8 @@ function settleParams(text) {
 /* scramble immediately, then begin settling early enough that the settle
    finishes at exactly targetMs from now — use for animations with a known duration */
 function scrambleThenSettleAt(text, setText, targetMs, maxChars = Infinity) {
-  const settleMs = Math.max(1, Math.min(SCRAMBLE_SETTLE_MS, targetMs));
-  const startAt  = Math.max(0, targetMs - settleMs);
-  let cancelLoop = scrambleLoop(text, setText, 30, maxChars);
-  let cancelSettle = null;
-  const timer = setTimeout(() => {
-    cancelLoop?.(); cancelLoop = null;
-    cancelSettle = scrambleResolveForMs(text, setText, settleMs, null, maxChars);
-  }, startAt);
-  return function cancel() {
-    clearTimeout(timer);
-    cancelLoop?.(); cancelLoop = null;
-    cancelSettle?.(); cancelSettle = null;
-  };
+  setText(text);
+  return function cancel() {};
 }
 
 function settleIn(text, setText, onComplete) {
@@ -471,24 +401,7 @@ function lockBracketTextWidth(el, original) {
 
 /* generic hover-scramble — applies to any static text element */
 function addScrambleHover(el) {
-  const orig = el.textContent;          /* capture once — never re-read during hover */
-  let cancelScramble = null, cancelResolve = null;
-  let unlockWidth = null;
-  el.addEventListener('mouseenter', () => {
-    document.body.classList.add('link-hover');
-    cancelResolve?.(); cancelResolve = null;  /* stop any in-progress settle */
-    unlockWidth?.(); unlockWidth = null;
-    unlockWidth = lockBracketTextWidth(el, orig);
-    cancelScramble?.();
-    cancelScramble = scrambleLoop(orig, t => { el.textContent = t; }, 30);
-  });
-  el.addEventListener('mouseleave', () => {
-    document.body.classList.remove('link-hover');
-    cancelScramble?.(); cancelScramble = null;
-    cancelResolve = scrambleResolveForMs(orig, t => { el.textContent = t; }, SCRAMBLE_SETTLE_MS, () => {
-      unlockWidth?.(); unlockWidth = null;
-    });
-  });
+  return el;
 }
 
 /* ── AbortController for page-content listeners (cleaned up on soft-nav) ── */
@@ -545,85 +458,24 @@ function h1Settle() {
 }
 
 function initH1Hero() {
-if (!h1El) return;
-const h1GlowFadeName = document.documentElement.classList.contains('is-safari') ? 'glowFadeIn-safari' : 'glowFadeIn';
-const h1GlowPulseName = document.documentElement.classList.contains('is-safari') ? 'glowPulse-safari' : 'glowPulse';
-splashReady.then(() => {
-if (
-  homeHeroEl &&
-  topbarNavEl &&
-  !document.documentElement.classList.contains('page-subpage')
-) {
-  syncNavPlacement();
-}
-if (isCoarsePointer) {
-  /* deterministic mobile intro: short timed scramble burst, then hard settle */
-  let burstTicks = 0;
-  const burst = setInterval(() => {
-    if (h1FadeUpDone) { clearInterval(burst); return; }
-    h1El.textContent = scrambleSnapshot(h1Orig);
-    applyH1Centering();
-    if (++burstTicks >= 14) clearInterval(burst);
-  }, 45);
-  h1SettleFallbackTimer = setTimeout(() => {
-    clearInterval(burst);
-    h1FinalizeImmediate();
-  }, 760);
-  h1SettleWatchdogTimer = setTimeout(() => {
-    clearInterval(burst);
-    h1FinalizeImmediate();
-  }, 1600);
-  window.addEventListener('pageshow', h1FinalizeImmediate, { once: true });
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) h1FinalizeImmediate();
-  }, { once: true });
-} else {
-  setTimeout(() => {
-    if (h1FadeUpDone) return;
-    cancelH1 = scrambleLoop(h1Orig, t => { if (h1El?.isConnected) h1El.textContent = t; });
-  }, 200);
-  h1El.addEventListener('animationend', e => {
-    if (e.animationName === 'fadeUp') h1Settle();
-    if (e.animationName === h1GlowFadeName) {
-      h1El.style.opacity = '1';
-      h1El.style.animation = `${h1GlowPulseName} 4s ease-in-out infinite`;
+  if (!h1El) return;
+  splashReady.then(() => {
+    if (
+      homeHeroEl &&
+      topbarNavEl &&
+      !document.documentElement.classList.contains('page-subpage')
+    ) {
+      syncNavPlacement();
     }
-  });
-
-  /* fallback: if page loaded in a background tab, fadeUp is suspended and
-     animationend never fires — settle once the tab becomes visible */
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) h1Settle();
-  }, { once: true });
-  window.addEventListener('pageshow', h1Settle, { once: true });
-  h1SettleFallbackTimer = setTimeout(h1Settle, 1600);
-  h1SettleWatchdogTimer = setTimeout(h1FinalizeImmediate, 2600);
-}
-});
-
-if (!isCoarsePointer) {
-  h1El.addEventListener('mouseenter', () => {
-    h1El.style.width = h1El.offsetWidth + 'px';
-    h1El.style.height = h1El.offsetHeight + 'px';
+    h1FadeUpDone = true;
+    h1ClearTimers();
+    cancelH1?.();
+    cancelH1 = null;
+    h1El.textContent = h1Orig;
     h1El.style.opacity = '1';
-    h1El.style.animation = `${h1GlowPulseName} 4s ease-in-out infinite`;
-    cancelH1?.();
-    h1El.classList.remove('chroma');
-    void h1El.offsetWidth;
-    h1El.classList.add('chroma');
-    setTimeout(() => h1El.classList.remove('chroma'), 500);
-    cancelH1 = scrambleLoop(h1Orig, t => { if (h1El?.isConnected) { h1El.textContent = t; applyH1Centering(); } });
+    h1El.style.animation = 'none';
+    h1El.style.transform = '';
   });
-  h1El.addEventListener('mouseleave', () => {
-    cancelH1?.();
-    cancelH1 = scrambleResolveForMs(h1Orig, t => { if (h1El?.isConnected) { h1El.textContent = t; applyH1Centering(); } }, SCRAMBLE_SETTLE_MS, () => {
-      if (!h1El?.isConnected) return;
-      h1El.style.transform = '';
-      h1El.style.width = '';
-      h1El.style.height = '';
-    });
-  });
-}
 } /* end initH1Hero */
 initH1Hero();
 
@@ -1428,35 +1280,10 @@ function syncSectionCenterState(targetEl = defaultCenterTarget) {
 function initInfoSection() {
   if (!hasInfoSection) return;
   const sig = _pageContentAbort?.signal;
-  /* reveal info section once it scrolls into view */
-  {
-    const infoLabelEls = Array.from(infoSection.querySelectorAll('.bio-panel-label'));
-    const infoLabelOrig = infoLabelEls.map(el => el.textContent);
-    /* prep: entire section starts invisible */
-    infoSection.style.opacity = '0';
-    infoSection.style.transform = 'translateY(12px)';
-    infoSection.style.transition = 'none';
-    void infoSection.offsetHeight; /* ensure initial hidden state is committed */
-
-    function revealInfo() {
-      const fadeMs = 500;
-      infoLabelEls.forEach((el, i) => {
-        scrambleThenSettleAt(infoLabelOrig[i], t => { el.textContent = t; }, fadeMs, accordionScrambleLimit(infoLabelOrig[i]));
-      });
-      /* fade everything in together; stage then promote on next frame */
-      infoSection.style.transition = 'opacity .5s ease, transform .5s ease';
-      requestAnimationFrame(() => {
-        infoSection.style.opacity = '1';
-        infoSection.style.transform = 'translateY(0)';
-        infoSection.classList.add('visible');
-      });
-    }
-
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) { revealInfo(); observer.disconnect(); }
-    }, { threshold: 0 });
-    observer.observe(infoSection);
-  }
+  infoSection.style.opacity = '1';
+  infoSection.style.transform = 'none';
+  infoSection.style.transition = 'none';
+  infoSection.classList.add('visible');
 
   /* auto-center removed — multiple sections now, free scroll */
   let narrowW = 0, expandedW = 0;
@@ -1744,52 +1571,18 @@ initInfoSection();
 function initSectionReveal(sectionId, textSelector) {
   const section = document.getElementById(sectionId);
   if (!section) return;
-  animDebugLog(`section prep: ${sectionId}`);
-  const textEls = Array.from(section.querySelectorAll(textSelector));
-  const textOrig = textEls.map(el => el.textContent);
-
-  /* prep stagger: children start invisible */
   const staggerChildren = Array.from(section.querySelectorAll(
     '.section-label, .featured-inner, .release-card, .date-row, .portfolio-card, .portfolio-link-card, .quote-card, .booking-signal-card, .portfolio-title, .portfolio-meta, .portfolio-link'
   ));
+  section.classList.add('visible');
+  section.style.animation = 'none';
+  section.style.opacity = '1';
+  section.style.transform = 'none';
   staggerChildren.forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(12px)';
+    el.style.opacity = '1';
+    el.style.transform = 'none';
     el.style.transition = 'none';
   });
-
-  const observer = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) {
-      animDebugLog(`section reveal start: ${sectionId}`);
-      section.classList.add('visible');
-
-      /* stagger children in */
-      staggerChildren.forEach((el, i) => {
-        setTimeout(() => {
-          el.style.transition = 'opacity .5s ease, transform .5s ease';
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-        }, i * 60);
-      });
-
-      function fadeTargetMsForText(el) {
-        const container = staggerChildren.find(node => node === el || node.contains(el));
-        const idx = container ? Math.max(0, staggerChildren.indexOf(container)) : 0;
-        return idx * 60 + 500;
-      }
-      textEls.forEach((el, i) => {
-        scrambleThenSettleAt(textOrig[i], t => { el.textContent = t; }, fadeTargetMsForText(el), accordionScrambleLimit(textOrig[i]));
-      });
-      const settleDoneMs = Math.max(500, staggerChildren.length * 60 + 500);
-      setTimeout(() => {
-        animDebugLog(`section settle: ${sectionId}`);
-        section.style.animation = 'none';
-        section.style.opacity = '1';
-      }, settleDoneMs + 20);
-      observer.disconnect();
-    }
-  }, { threshold: 0 });
-  observer.observe(section);
 }
 
 /* reveal tickers */
