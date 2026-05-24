@@ -1,4 +1,4 @@
-/* page load fade-in — swap loading→ready so content transitions in smoothly */
+/* page readiness */
 
 const animDebugEnabled = new URLSearchParams(window.location.search).get('animdebug') === '1';
 let animDebugOverlay = null;
@@ -266,114 +266,6 @@ if (topbarLogoEl) {
 const turbEl = document.querySelector('#noise feTurbulence');
 let noiseSeed = 0, grainFrame = 0;
 
-/* scramble */
-const glyphSet      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@%&<>?';
-const glyphSetLower = 'abcdefghijklmnopqrstuvwxyz0123456789#@%&<>?';
-const SCRAMBLE_SETTLE_MS = 500;
-const SCRAMBLE_TICK_MS = 30;
-/* match case of original char so lowercase text (e.g. bio) stays the same height */
-function randGlyph(c) {
-  const set = (c >= 'a' && c <= 'z') ? glyphSetLower : glyphSet;
-  return set[Math.floor(Math.random() * set.length)];
-}
-
-function nonSpaceCharCount(text) {
-  return text.replace(/ /g, '').length;
-}
-
-function bracketMask(text) {
-  const mask = new Array(text.length).fill(false);
-  const openToClose = { '(': ')', '[': ']', '{': '}', '<': '>' };
-  const stack = [];
-  const chars = text.split('');
-  chars.forEach((c, i) => {
-    if (openToClose[c]) {
-      stack.push({ close: openToClose[c], idx: i });
-      return;
-    }
-    if (!stack.length) return;
-    const top = stack[stack.length - 1];
-    if (c === top.close) {
-      const open = stack.pop();
-      for (let n = open.idx; n <= i; n++) mask[n] = true;
-    }
-  });
-  return mask;
-}
-
-function scramblePlan(original, maxChars = Infinity) {
-  const eligible = [];
-  const bracketed = bracketMask(original);
-  original.split('').forEach((c, i) => {
-    if (c !== ' ' && !bracketed[i]) eligible.push(i);
-  });
-
-  if (!Number.isFinite(maxChars) || maxChars >= eligible.length) {
-    const fullRanks = new Map(eligible.map((idx, rank) => [idx, rank]));
-    return { count: eligible.length, ranks: fullRanks };
-  }
-
-  const limited = [];
-  const step = eligible.length / Math.max(1, maxChars);
-  for (let n = 0; n < maxChars; n++) {
-    limited.push(eligible[Math.floor(n * step)]);
-  }
-  const uniqueLimited = [...new Set(limited)];
-  return { count: uniqueLimited.length, ranks: new Map(uniqueLimited.map((idx, rank) => [idx, rank])) };
-}
-
-function accordionScrambleLimit(text) {
-  const total = nonSpaceCharCount(text);
-  return Math.min(total, Math.max(8, Math.min(16, Math.floor(total * 0.28))));
-}
-
-function fixedLen(text, len) {
-  return text.length === len ? text : text.slice(0, len).padEnd(len, ' ');
-}
-
-function scrambleSnapshot(original) {
-  return fixedLen(
-    original.split('').map(c => (c === ' ' ? ' ' : randGlyph(c))).join(''),
-    original.length
-  );
-}
-
-function scrambleLoop(original, setText, stepMs = 50, maxChars = Infinity) {
-  setText(original);
-  return () => {};
-}
-
-function scrambleResolve(original, setText, steps = 16, stepMs = 50, onComplete, maxChars = Infinity) {
-  return scrambleResolveForMs(original, setText, Math.max(1, steps * stepMs), onComplete, maxChars);
-}
-
-function scrambleResolveForMs(original, setText, durationMs = SCRAMBLE_SETTLE_MS, onComplete, maxChars = Infinity) {
-  setText(original);
-  onComplete?.();
-  return () => {};
-}
-
-/* fixed global settle timing for all scramble resolutions */
-function settleParams(text) {
-  return [Math.max(1, Math.round(SCRAMBLE_SETTLE_MS / 25)), 25];
-}
-
-/* resolve text that is already actively scrambling — call after stopping a
-   scrambleLoop that ran during an entry animation (page load, panel slide-in, etc.).
-   Same 25 ms/step speed as settleParams; capped at 20 steps so long paragraphs
-   don't drag on appear.  Do NOT call this without a prior scrambleLoop running,
-   or the text will start scrambled for one frame before resolving. */
-/* scramble immediately, then begin settling early enough that the settle
-   finishes at exactly targetMs from now — use for animations with a known duration */
-function scrambleThenSettleAt(text, setText, targetMs, maxChars = Infinity) {
-  setText(text);
-  return function cancel() {};
-}
-
-function settleIn(text, setText, onComplete) {
-  return scrambleResolveForMs(text, setText, SCRAMBLE_SETTLE_MS, onComplete);
-}
-
 function hasBracketedText(text) {
   return /[\(\[\{][^)\]}]+[\)\]\}]/.test(text);
 }
@@ -399,15 +291,10 @@ function lockBracketTextWidth(el, original) {
   };
 }
 
-/* generic hover-scramble — applies to any static text element */
-function addScrambleHover(el) {
-  return el;
-}
-
 /* ── AbortController for page-content listeners (cleaned up on soft-nav) ── */
 let _pageContentAbort = new AbortController();
 
-/* h1 scramble + chromatic aberration */
+/* h1 hero */
 let h1El   = document.querySelector('h1');
 let homeHeroEl = document.querySelector('.hero');
 const topbarNavEl = document.querySelector('.topbar-nav');
@@ -454,7 +341,8 @@ function h1Settle() {
   h1ClearTimers();
   cancelH1?.(); cancelH1 = null;
   h1El.style.opacity = '1';
-  cancelH1 = settleIn(h1Orig, t => { h1El.textContent = t; applyH1Centering(); });
+  h1El.textContent = h1Orig;
+  applyH1Centering();
 }
 
 function initH1Hero() {
@@ -727,9 +615,8 @@ function loadTrack(idx, opts = {}) {
   trackIdx = ((idx % tracks.length) + tracks.length) % tracks.length;
   const title = tracks[trackIdx].title;
   playerTrack.classList.remove('scrolling');
-  scrambleResolveForMs(title, t => { playerTrack.textContent = t; }, SCRAMBLE_SETTLE_MS, () => {
-    updateMarquee();
-  });
+  playerTrack.textContent = title;
+  updateMarquee();
   playerCounter.textContent = `${trackIdx + 1} / ${tracks.length}`;
   if (!deferAudioLoad) {
     audio.src = trackSrc(trackIdx);
@@ -900,24 +787,6 @@ window.addEventListener('resize', () => {
   clearTimeout(resizePlayerTimer);
   resizePlayerTimer = setTimeout(syncPlayerWidth, 100);
 });
-
-/* hover-scramble for player track name */
-{
-  let cancelTrackScramble = null, cancelTrackResolve = null;
-  playerTrack.addEventListener('mouseenter', () => {
-    const current = playerTrack.textContent;
-    cancelTrackResolve?.(); cancelTrackResolve = null;
-    cancelTrackScramble?.();
-    cancelTrackScramble = scrambleLoop(current, t => { playerTrack.textContent = t; }, 30);
-  });
-  playerTrack.addEventListener('mouseleave', () => {
-    const current = tracks.length ? tracks[trackIdx].title : '—';
-    cancelTrackScramble?.(); cancelTrackScramble = null;
-    cancelTrackResolve = scrambleResolveForMs(current, t => { playerTrack.textContent = t; }, SCRAMBLE_SETTLE_MS, () => {
-      updateMarquee();
-    });
-  });
-}
 
 /* tap-to-play hint on mobile */
 {
@@ -1196,7 +1065,6 @@ function initTopbarScrollHide() {
 }
 initTopbarScrollHide();
 
-/* info section scramble — apply hover-scramble after DOM ready */
 let infoSection = document.getElementById('infoSection');
 let hasInfoSection = Boolean(infoSection && !infoSection.hidden);
 const CONNECT_EXTRA_WIDTH = 320;
@@ -1409,7 +1277,6 @@ function initInfoSection() {
         content.style.maxHeight = content.scrollHeight + 'px';
         followSectionCenter(infoSection, 400);
 
-        /* scramble-settle the revealed text */
         const textEls  = Array.from(content.querySelectorAll('.bio-text, .bio-press-links a, .label-btn'));
         const textOrig = textEls.map(el => el.textContent);
         const lockWidthEls = window.innerWidth <= 768
@@ -1420,22 +1287,13 @@ function initInfoSection() {
           el.style.minWidth = `${w}px`;
           el.style.whiteSpace = 'nowrap';
         });
-        const loops = textEls.map((el, i) => scrambleLoop(textOrig[i], t => { el.textContent = t; }, 30, accordionScrambleLimit(textOrig[i])));
-        loops.forEach(c => c());
-        let remainingSettle = textEls.length;
-        textEls.forEach((el, i) => scrambleResolveForMs(
-          textOrig[i],
-          t => { el.textContent = t; },
-          SCRAMBLE_SETTLE_MS,
-          () => {
-            if (--remainingSettle !== 0) return;
-            lockWidthEls.forEach(locked => {
-              locked.style.minWidth = '';
-              locked.style.whiteSpace = '';
-            });
-          },
-          accordionScrambleLimit(textOrig[i])
-        ));
+        textEls.forEach((el, i) => {
+          el.textContent = textOrig[i];
+        });
+        lockWidthEls.forEach(locked => {
+          locked.style.minWidth = '';
+          locked.style.whiteSpace = '';
+        });
       }
     }, { signal: sig });
   });
@@ -1528,11 +1386,10 @@ function initInfoSection() {
         if (parentContent.style.maxHeight && parentContent.style.maxHeight !== '0px')
           parentContent.style.maxHeight = finalContentH + 'px';
         followSectionCenter(infoSection, 400);
-        /* scramble-settle song links as they slide in */
         Array.from(songs.querySelectorAll('a')).forEach(a => {
           const text = a.textContent;
           const unlockWidth = lockBracketTextWidth(a, text);
-          scrambleThenSettleAt(text, t => { a.textContent = t; }, SCRAMBLE_SETTLE_MS, accordionScrambleLimit(text));
+          a.textContent = text;
           setTimeout(unlockWidth, 340);
         });
       }
@@ -1552,22 +1409,10 @@ function initInfoSection() {
     syncSectionCenterState(infoSection);
   }, { signal: sig });
 
-  /* apply hover-scramble to all remaining static text elements
-     (info section elements are excluded — no hover scramble there) */
-  const infoSectionEls = new Set(infoSection.querySelectorAll('.bio-panel-label, .bio-text, .bio-press-links a'));
-  [
-    /* panel titles + labels (excluding info section) */
-    ...Array.from(document.querySelectorAll('.bio-panel-title, .bio-panel-label')).filter(el => !infoSectionEls.has(el)),
-    /* bio body text (excluding info section) */
-    ...Array.from(document.querySelectorAll('.bio-text')).filter(el => !infoSectionEls.has(el)),
-  ].forEach(addScrambleHover);
 }
 initInfoSection();
 
-/* info-block-header scramble removed — clickable elements skip hover-scramble */
-
-
-/* ── generic section reveal with scramble-settle ───────────────── */
+/* ── generic section reveal ───────────────── */
 function initSectionReveal(sectionId, textSelector) {
   const section = document.getElementById(sectionId);
   if (!section) return;
@@ -1625,7 +1470,6 @@ function initSectionReveals() {
   initSectionReveal('newsletterSection', '.section-label, .portfolio-title, .portfolio-meta, .portfolio-link');
 }
 
-/* keep upcoming date text from shifting during scramble */
 let upcomingDateEls = Array.from(document.querySelectorAll('#datesSection .date-date, #datesSection .date-venue'));
 function lockUpcomingDateWidths() {
   upcomingDateEls.forEach(el => {
@@ -1646,26 +1490,18 @@ function lockUpcomingDateWidths() {
   });
 }
 
-function initDateWidthsAndHoverScramble() {
+function initDateWidths() {
   const sig = _pageContentAbort?.signal;
   upcomingDateEls = Array.from(document.querySelectorAll('#datesSection .date-date, #datesSection .date-venue'));
   lockUpcomingDateWidths();
   window.addEventListener('resize', () => {
     lockUpcomingDateWidths();
   }, { passive: true, signal: sig });
-
-  /* hover-scramble for new static text elements */
-  document.querySelectorAll(
-    '.featured-title, .featured-meta, .dates-empty, #datesSection .date-date, #datesSection .date-venue, .portfolio-title, .portfolio-meta, .quote-line, .quote-source, #pastShowsSection .section-label'
-  ).forEach(addScrambleHover);
-  Array.from(document.querySelectorAll('.section-label'))
-    .filter(el => !pastShowsSection || !pastShowsSection.contains(el))
-    .forEach(addScrambleHover);
 }
 
 initTickers();
 initSectionReveals();
-initDateWidthsAndHoverScramble();
+initDateWidths();
 
 /* past shows year accordion */
 let pastShowsYears = pastShowsSection ? Array.from(document.querySelectorAll('.past-shows-year')) : [];

@@ -26,19 +26,15 @@ a, button, input, textarea, select, [contenteditable] {
 .splash-logo {
   width: clamp(150px, 36vw, 340px);
   height: auto;
-  opacity: 0;
+  opacity: 1;
   cursor: none !important;
   filter: brightness(0.961);
-  animation: splashFadeIn 1.2s .2s ease forwards, splashPulse 2.5s 1.4s ease-in-out infinite;
+  animation: splashPulse 2.5s ease-in-out infinite;
   transition: filter .3s ease;
 }
 .splash-logo:hover {
-  animation-play-state: running, paused;
+  animation-play-state: paused;
   filter: brightness(0.961) drop-shadow(0 0 12px rgba(0,212,255,.25));
-}
-@keyframes splashFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
 }
 @keyframes splashPulse {
   0%, 100% { filter: brightness(0.961) drop-shadow(0 0 0px transparent); }
@@ -62,7 +58,7 @@ a, button, input, textarea, select, [contenteditable] {
 /* hide overflow while splash is up */
 html.splash-active { overflow: hidden; }
 
-/* page load fade-in — content starts hidden, bg/vignette/grain stay visible */
+/* page load: keep content visible immediately */
 html.page-loading:not(.skip-page-intro) main {
   opacity: 1 !important;
   transition: none !important;
@@ -530,10 +526,6 @@ h1 {
 .is-safari h1 {
   animation: none;
 }
-@keyframes glowFadeIn {
-  from { text-shadow: none; }
-  to   { text-shadow: 0 0 12px rgba(0,212,255,.2), 0 0 30px rgba(0,212,255,.08); }
-}
 @keyframes glowPulse {
   0%, 100% { text-shadow: 0 0 12px rgba(0,212,255,.2), 0 0 30px rgba(0,212,255,.08); }
   50%       { text-shadow: 0 0 20px rgba(0,212,255,.45), 0 0 45px rgba(0,212,255,.15), 0 0 80px rgba(124,58,237,.1); }
@@ -614,19 +606,6 @@ a:hover::before { animation: btnSweep .55s ease forwards; }
 }
 a .arr { transition: transform .25s; }
 a:hover .arr { transform: translateX(3px); }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeUpHeroNav {
-  from { opacity: 0; transform: translateY(16px) scale(1.4); }
-  to   { opacity: 1; transform: translateY(0) scale(1.4); }
-}
-@keyframes fadeUpFixed {
-  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
 
 /* player */
 .player {
@@ -789,7 +768,7 @@ html.skip-player-intro .player {
     text-align: center;
     position: relative;
     transform: none;
-    animation: fadeUp .9s .2s ease forwards;
+    animation: none;
     margin: clamp(1.1rem, 2.8vh, 1.8rem) auto 0;
     gap: .6rem .75rem;
   }
@@ -916,14 +895,10 @@ html.skip-player-intro .player {
   width: 14px; height: 14px;
   border-right: 1.5px solid rgba(0,212,255,.45);
   border-bottom: 1.5px solid rgba(0,212,255,.45);
-  opacity: 0;
-  animation: arrowFadeUp .9s .9s ease forwards, arrowBob 2.2s 1.8s ease-in-out infinite;
+  opacity: 1;
+  animation: arrowBob 2.2s ease-in-out infinite;
   pointer-events: none;
   z-index: 50;
-}
-@keyframes arrowFadeUp {
-  from { opacity: 0; transform: rotate(45deg) translateY(16px); }
-  to   { opacity: 1; transform: rotate(45deg) translateY(0); }
 }
 @keyframes arrowBob {
   0%, 100% { transform: rotate(45deg) translateY(0); }
@@ -2040,10 +2015,6 @@ html.skip-player-intro .player {
 .is-safari h1.chroma {
   animation: chromaAberr-safari .5s ease forwards, glowPulse-safari 4s ease-in-out infinite !important;
 }
-@keyframes glowFadeIn-safari {
-  from { text-shadow: none; }
-  to   { text-shadow: 0 0 8px rgba(0,212,255,.1), 0 0 20px rgba(0,212,255,.04); }
-}
 @keyframes glowPulse-safari {
   0%, 100% { text-shadow: 0 0 8px rgba(0,212,255,.1), 0 0 20px rgba(0,212,255,.04); }
   50%       { text-shadow: 0 0 14px rgba(0,212,255,.25), 0 0 30px rgba(0,212,255,.08), 0 0 55px rgba(124,58,237,.05); }
@@ -2192,7 +2163,7 @@ html.skip-player-intro .player {
 
 /* --- splash logo pulse --- */
 .is-safari .splash-logo {
-  animation: splashFadeIn 1.2s .2s ease forwards, splashPulse-safari 2.5s 1.4s ease-in-out infinite;
+  animation: splashPulse-safari 2.5s ease-in-out infinite;
 }
 .is-safari .splash-logo:hover {
   filter: brightness(0.961) drop-shadow(0 0 8px rgba(0,212,255,.12));
