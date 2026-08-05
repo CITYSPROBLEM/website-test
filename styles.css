@@ -1648,6 +1648,24 @@ html.skip-player-intro .player {
   text-align: left;
   white-space: normal;
 }
+#datesSection .date-row {
+  justify-content: flex-start;
+  border-bottom: 1px solid rgba(0,212,255,.14);
+  padding: .5rem 0;
+  gap: clamp(.6rem, 2vw, 1.2rem);
+}
+#datesSection .date-date {
+  font-size: clamp(.55rem, 1.6vw, .8rem);
+  color: rgba(0,212,255,.7);
+  min-width: 3.5rem;
+  text-align: left;
+}
+#datesSection .date-venue {
+  font-size: clamp(.55rem, 1.6vw, .8rem);
+  color: var(--text);
+  text-align: left;
+  white-space: normal;
+}
 
 /* ── portfolio phase 1 blocks ───────────────────── */
 .portfolio-section {
@@ -1897,11 +1915,21 @@ html.skip-player-intro .player {
   .date-date { font-size: .65rem; }
   .date-venue { font-size: .6rem; }
   .past-shows-list .date-row { flex-direction: row; text-align: left; }
+  #datesSection .date-row { flex-direction: row; text-align: left; }
   .past-shows-list .date-date {
     font-size: clamp(.52rem, 2.4vw, .62rem);
     min-width: 3rem;
   }
+  #datesSection .date-date {
+    font-size: clamp(.52rem, 2.4vw, .62rem);
+    min-width: 3rem;
+  }
   .past-shows-list .date-venue {
+    font-size: clamp(.52rem, 2.4vw, .64rem);
+    line-height: 1.55;
+    white-space: normal;
+  }
+  #datesSection .date-venue {
     font-size: clamp(.52rem, 2.4vw, .64rem);
     line-height: 1.55;
     white-space: normal;
