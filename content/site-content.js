@@ -8,11 +8,11 @@
       logoHeight: 128
     },
     navLinks: [
-      { label: 'Music', href: 'music.html' },
-      { label: 'Shows', href: 'shows.html' },
-      { label: 'Press', href: 'press.html' },
-      { label: 'About', href: 'about.html' },
-      { label: 'Booking', href: 'booking.html' }
+      { label: 'Music', href: '/music' },
+      { label: 'Shows', href: '/shows' },
+      { label: 'Press', href: '/press' },
+      { label: 'About', href: '/about' },
+      { label: 'Booking', href: '/booking' }
     ],
     player: {
       initialCurrentTime: '0:00',

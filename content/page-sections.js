@@ -257,14 +257,14 @@
       <div class="booking-signal-meta">
         <p class="portfolio-meta">TRY A VERIFIED ROUTE BELOW</p>
       </div>
-      <a class="portfolio-link booking-cta" href="index.html">RETURN TO HOME</a>
+      <a class="portfolio-link booking-cta" href="/">RETURN TO HOME</a>
     </div>
 `,
       "newsletterSection": `
 <p class="section-label">DIRECT LINKS</p>
     <div class="portfolio-card">
       <p class="portfolio-title">MUSIC / SHOWS / PRESS / ABOUT / BOOKING</p>
-      <a class="portfolio-link" href="music.html">OPEN MUSIC</a>
+      <a class="portfolio-link" href="/music">OPEN MUSIC</a>
     </div>
 `
     }
