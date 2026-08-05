@@ -1491,12 +1491,12 @@ function lockUpcomingDateWidths() {
 }
 
 function initDateWidths() {
-  const sig = _pageContentAbort?.signal;
   upcomingDateEls = Array.from(document.querySelectorAll('#datesSection .date-date, #datesSection .date-venue'));
-  lockUpcomingDateWidths();
-  window.addEventListener('resize', () => {
-    lockUpcomingDateWidths();
-  }, { passive: true, signal: sig });
+  upcomingDateEls.forEach(el => {
+    el.style.display = '';
+    el.style.width = '';
+    el.style.minWidth = '';
+  });
 }
 
 initTickers();
@@ -1664,7 +1664,7 @@ function initPageContent() {
   initInfoSection();
   initTickers();
   initSectionReveals();
-  initDateWidthsAndHoverScramble();
+  initDateWidths();
   initPastShows();
   initMagneticAndTilt();
   syncPlayerWidth();
