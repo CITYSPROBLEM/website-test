@@ -83,9 +83,13 @@ html {
   width: 100%; min-height: 100%;
   background-color: #030a14;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
   scroll-snap-type: y proximity;
   scrollbar-width: thin;
   scrollbar-color: rgba(0,212,255,.35) rgba(255,255,255,.08);
+}
+@supports not (scrollbar-gutter: stable) {
+  html { overflow-y: scroll; }
 }
 html.page-subpage {
   scroll-snap-type: none;
@@ -1649,21 +1653,24 @@ html.skip-player-intro .player {
   white-space: normal;
 }
 #datesSection .date-row {
-  justify-content: flex-start;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   border-bottom: 1px solid rgba(0,212,255,.14);
   padding: .5rem 0;
-  gap: clamp(.6rem, 2vw, 1.2rem);
+  gap: .3rem;
+  text-align: center;
 }
 #datesSection .date-date {
   font-size: clamp(.55rem, 1.6vw, .8rem);
   color: rgba(0,212,255,.7);
-  min-width: 3.5rem;
-  text-align: left;
+  min-width: 0;
+  text-align: center;
 }
 #datesSection .date-venue {
   font-size: clamp(.55rem, 1.6vw, .8rem);
   color: var(--text);
-  text-align: left;
+  text-align: center;
   white-space: normal;
 }
 
@@ -1915,14 +1922,14 @@ html.skip-player-intro .player {
   .date-date { font-size: .65rem; }
   .date-venue { font-size: .6rem; }
   .past-shows-list .date-row { flex-direction: row; text-align: left; }
-  #datesSection .date-row { flex-direction: row; text-align: left; }
+  #datesSection .date-row { flex-direction: column; text-align: center; }
   .past-shows-list .date-date {
     font-size: clamp(.52rem, 2.4vw, .62rem);
     min-width: 3rem;
   }
   #datesSection .date-date {
     font-size: clamp(.52rem, 2.4vw, .62rem);
-    min-width: 3rem;
+    min-width: 0;
   }
   .past-shows-list .date-venue {
     font-size: clamp(.52rem, 2.4vw, .64rem);
