@@ -77,7 +77,7 @@
       "datesSection": `
 <p class="section-label">UPCOMING SHOWS</p>
       <div class="dates-list">
-        <a class="date-row" href="https://tickets.venuepilot.com/e/cathedral2-5941ba" target="_blank" rel="noopener noreferrer"><span class="date-date">8/7</span><span class="date-venue">CULT MAG, CATHEDRAL 2, TRANS PECOS NYC (US)</span></a>
+        <a class="date-row" href="https://tickets.venuepilot.com/e/cathedral2-5941ba" target="_blank" rel="noopener noreferrer"><span class="date-date">8/7</span><span class="date-venue">CULT MAG, CATHEDRAL 2, NYC (US)</span></a>
         <a class="date-row" href="https://ra.co/events/2498482" target="_blank" rel="noopener noreferrer"><span class="date-date">8/8</span><span class="date-venue">GREEN DREAMS, UNDER CONSTRUCTION, BOSTON (US)</span></a>
         <a class="date-row" href="https://ra.co/events/2500413" target="_blank" rel="noopener noreferrer"><span class="date-date">8/13</span><span class="date-venue">RAPTURA, LONDON (UK)</span></a>
         <a class="date-row" href="https://ra.co/events/2485162" target="_blank" rel="noopener noreferrer"><span class="date-date">8/14</span><span class="date-venue">EMOTIONAL SLUT MUSIC, LEO, MANCHESTER (UK)</span></a>
